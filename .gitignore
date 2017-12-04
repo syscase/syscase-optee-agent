@@ -13,4 +13,4 @@ GTAGS
 *.swp
 *.ta
 cscope.*
-host/optee_agent
+host/optee_example_agent
