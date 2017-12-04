@@ -9,4 +9,6 @@
 /* The Trusted Application Function ID(s) implemented in this TA */
 #define TA_AGENT_CMD_CALL	0
 
+extern int global;
+
 #endif /*TA_AGENT_H*/

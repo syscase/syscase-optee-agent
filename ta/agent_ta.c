@@ -5,6 +5,8 @@
 
 #include "agent_ta.h"
 
+int global;
+
 /*
  * Called when the instance of the TA is created. This is the first call in
  * the TA.
@@ -85,6 +87,7 @@ static TEE_Result call(uint32_t param_types,
 	IMSG("TA AGENT: With argument: %u", params[0].value.a);
 	params[0].value.a=0;
 	IMSG("TA AGENT response: %u", params[0].value.a);
+	IMSG("global: %p", (void*)&global);
 
 	return TEE_SUCCESS;
 }
