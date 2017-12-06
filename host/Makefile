@@ -6,11 +6,15 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
 READELF = $(CROSS_COMPILE)readelf
 
+LDOBJS += client.o
+LDOBJS += agent_client.o
+
 OBJS = main.o
+OBJS += $(LDOBJS)
 
 CFLAGS += -Wall -I../ta/include -I$(TEEC_EXPORT)/include -I./include
 #Add/link other required libraries here
-LDADD += -lteec -L$(TEEC_EXPORT)/lib
+LDADD += $(LDOBJS) -lteec -L$(TEEC_EXPORT)/lib
 
 BINARY = optee_example_agent
 
