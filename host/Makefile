@@ -8,6 +8,7 @@ READELF = $(CROSS_COMPILE)readelf
 
 LDOBJS += client.o
 LDOBJS += agent_client.o
+LDOBJS += afl_call.o
 
 OBJS = main.o
 OBJS += $(LDOBJS)

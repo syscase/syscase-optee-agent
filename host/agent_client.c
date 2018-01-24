@@ -2,13 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <agent_client.h>
+#include "agent_client.h"
+
+#include "afl_call.h"
 
 /*
  * Invoke call function
  */
 TEEC_Result invokeCall(TEEC_Context *ctx, TEEC_Session *sess)
 {
+  startForkserver(2);
   uint32_t err_origin;
   TEEC_Operation op;
 
