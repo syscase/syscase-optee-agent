@@ -11,6 +11,11 @@
  */
 TEEC_Result invokeCall(TEEC_Context *ctx, TEEC_Session *sess)
 {
+  u_long sz;
+  char *buf;
+  buf = getWork(&sz);
+  printf("got work: %lu - %.*s\n", sz, (int)sz, buf);
+
   uint32_t err_origin;
   TEEC_Operation op;
 
