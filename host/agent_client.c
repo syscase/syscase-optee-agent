@@ -7,7 +7,7 @@
 /*
  * Invoke call function
  */
-TEEC_Result invokeCall(TEEC_Session *sess)
+TEEC_Result invokeCall(TEEC_Context *ctx, TEEC_Session *sess)
 {
   uint32_t err_origin;
   TEEC_Operation op;
