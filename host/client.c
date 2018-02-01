@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <client.h>
+#include "client.h"
 
 /*
  * Initialize context
@@ -59,7 +59,7 @@ void printf_parallel(char* text, int n, int i)
 /*
  * Runs n parallel context's and session's.
  */
-void parallel(TEEC_UUID *uuid, int n, TEEC_Result (*callback)(TEEC_Context *ctx, TEEC_Session *sess))
+void parallel(TEEC_UUID *uuid, int n, void (*callback)(TEEC_Context *ctx, TEEC_Session *sess))
 {
   TEEC_Context ctx[n];
   TEEC_Session sess[n];
@@ -93,7 +93,7 @@ void parallel(TEEC_UUID *uuid, int n, TEEC_Result (*callback)(TEEC_Context *ctx,
 /*
  * Run one context and session. Call callback, when session is opened.
  */
-void run(TEEC_UUID *uuid, TEEC_Result (*callback)(TEEC_Context *ctx, TEEC_Session *sess))
+void run(TEEC_UUID *uuid, void (*callback)(TEEC_Context *ctx, TEEC_Session *sess))
 {
   parallel(uuid, 1, callback);
 }
