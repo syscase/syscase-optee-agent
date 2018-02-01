@@ -1,5 +1,13 @@
 # Change Log
 
+## [Unreleased](https://github.com/zaidan/optee_agent/tree/HEAD)
+
+[Full Changelog](https://github.com/zaidan/optee_agent/compare/0.1.0...HEAD)
+
+**Implemented enhancements:**
+
+- Add CHANGELOG [\#5](https://github.com/zaidan/optee_agent/issues/5)
+
 ## [0.1.0](https://github.com/zaidan/optee_agent/tree/0.1.0) (2018-02-01)
 
 [Full Changelog](https://github.com/zaidan/optee_agent/compare/0.0.1...0.1.0)
