@@ -1,0 +1,10 @@
+#!/bin/bash
+if [[ ! -v CHANGELOG_GITHUB_TOKEN ]]
+  then
+    echo 'ERROR: CHANGELOG_GITHUB_TOKEN not set!'
+    echo "Add the following line to your shell profile:\n"
+    echo 'export CHANGELOG_GITHUB_TOKEN="«your-40-digit-github-token»"'
+    exit 1
+fi
+github_changelog_generator -u zaidan -p optee_agent --token "$CHANGELOG_GITHUB_TOKEN"
+echo "`head -n -3 CHANGELOG.md`" > CHANGELOG.md
