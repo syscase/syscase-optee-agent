@@ -6,16 +6,8 @@
 
 #include "afl_call.h"
 
-/*
- * Invoke call function
- */
-TEEC_Result invokeCall(TEEC_Context *ctx, TEEC_Session *sess)
+TEEC_Result invokeCall(TEEC_Session *sess, char* input, u_long input_size)
 {
-  u_long sz;
-  char *buf;
-  buf = getWork(&sz);
-  printf("got work: %lu - %.*s\n", sz, (int)sz, buf);
-
   uint32_t err_origin;
   TEEC_Operation op;
 
@@ -35,6 +27,32 @@ TEEC_Result invokeCall(TEEC_Context *ctx, TEEC_Session *sess)
     errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x",
       res, err_origin);
   printf("Receive TA response: %d\n", op.params[0].value.a);
+
   return res;
+}
+
+/*
+ * Run test case
+ */
+void runTest(TEEC_Context *ctx, TEEC_Session *sess)
+{
+  u_long input_size;
+  char *input;
+  input = getWork(&input_size);
+  printf("got work: %lu - %.*s\n", input_size, (int) input_size, input);
+
+  /* Trace agent */
+  //extern void _start(), __libc_start_main();
+  //startWork((u_long)_start, (u_long)__libc_start_main)
+
+  /* Trace Linux Kernel */
+  //startWork(0xffff000000000000L, 0xffffffffffffffffL);
+
+  /* Trace OPTEE Core */
+  startWork(0xe100000, 0xe143fff);
+
+  invokeCall(sess, input, input_size);
+
+  doneWork(0);
 }
 

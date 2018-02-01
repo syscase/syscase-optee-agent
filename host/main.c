@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
   TEEC_UUID uuid = TA_AGENT_UUID;
 
   startForkserver(0);
-  run(&uuid, invokeCall);
+  run(&uuid, runTest);
 
   return 0;
 }
