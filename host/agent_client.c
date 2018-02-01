@@ -11,7 +11,6 @@
  */
 TEEC_Result invokeCall(TEEC_Context *ctx, TEEC_Session *sess)
 {
-  startForkserver(2);
   uint32_t err_origin;
   TEEC_Operation op;
 
