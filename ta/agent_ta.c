@@ -74,8 +74,11 @@ void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx)
 static TEE_Result call(uint32_t param_types,
 	TEE_Param params[4])
 {
+  char* input;
+  uint64_t input_size;
+
 	uint32_t exp_param_types = TEE_PARAM_TYPES(TEE_PARAM_TYPE_VALUE_INOUT,
-						   TEE_PARAM_TYPE_NONE,
+						   TEE_PARAM_TYPE_MEMREF_INPUT,
 						   TEE_PARAM_TYPE_NONE,
 						   TEE_PARAM_TYPE_NONE);
 
@@ -84,7 +87,12 @@ static TEE_Result call(uint32_t param_types,
 	if (param_types != exp_param_types)
 		return TEE_ERROR_BAD_PARAMETERS;
 
+  input = params[1].memref.buffer;
+  input_size = params[1].memref.size;
+
 	IMSG("TA AGENT: With argument: %u", params[0].value.a);
+	IMSG("TA AGENT: With input: %s", input);
+	IMSG("TA AGENT: With input size: %lu", input_size);
 	params[0].value.a=0;
 	IMSG("TA AGENT response: %u", params[0].value.a);
 	IMSG("global: %p", (void*)&global);
