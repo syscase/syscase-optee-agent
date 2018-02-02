@@ -15,9 +15,12 @@ TEEC_Result invokeCall(TEEC_Session *sess, char* input, u_long input_size)
   memset(&op, 0, sizeof(op));
 
   // Prepare arguments
-  op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT, TEEC_NONE,
+  op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT, TEEC_MEMREF_TEMP_INPUT,
                     TEEC_NONE, TEEC_NONE);
   op.params[0].value.a = 43;
+
+	op.params[1].tmpref.buffer = input;
+	op.params[1].tmpref.size = input_size;
 
   // Invoke TA_AGENT_CMD_CALL
   printf("Invoking call with argument: %d\n", op.params[0].value.a);
