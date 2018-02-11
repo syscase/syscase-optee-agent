@@ -59,7 +59,7 @@ void printf_parallel(char* text, int n, int i)
 /*
  * Runs n parallel context's and session's.
  */
-void parallel(TEEC_UUID *uuid, int n, void (*callback)(TEEC_Context *ctx, TEEC_Session *sess))
+void parallel(TEEC_UUID *uuid, int n, void (*callback)(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv), int argc, char **argv)
 {
   TEEC_Context ctx[n];
   TEEC_Session sess[n];
@@ -76,7 +76,7 @@ void parallel(TEEC_UUID *uuid, int n, void (*callback)(TEEC_Context *ctx, TEEC_S
 
   for(int i = 0; i < n; i++) {
     printf_parallel("Invoke Callback", n, i);
-    callback(&ctx[i], &sess[i]);
+    callback(&ctx[i], &sess[i], argc, argv);
   }
 
   for(int i = 0; i < n; i++) {
@@ -93,8 +93,8 @@ void parallel(TEEC_UUID *uuid, int n, void (*callback)(TEEC_Context *ctx, TEEC_S
 /*
  * Run one context and session. Call callback, when session is opened.
  */
-void run(TEEC_UUID *uuid, void (*callback)(TEEC_Context *ctx, TEEC_Session *sess))
+void run(TEEC_UUID *uuid, void (*callback)(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv), int argc, char **argv)
 {
-  parallel(uuid, 1, callback);
+  parallel(uuid, 1, callback, argc, argv);
 }
 

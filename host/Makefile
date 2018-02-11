@@ -7,8 +7,13 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 READELF = $(CROSS_COMPILE)readelf
 
 LDOBJS += client.o
-LDOBJS += agent_client.o
 LDOBJS += afl_call.o
+LDOBJS += syscase/buffer.o
+LDOBJS += syscase/test_case.o
+LDOBJS += syscase/argument/file_descriptor.o
+LDOBJS += syscase/utils.o
+LDOBJS += guard.o
+LDOBJS += agent_client.o
 
 OBJS = main.o
 OBJS += $(LDOBJS)
