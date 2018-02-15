@@ -11,6 +11,9 @@
 
 int syscase_verbose = 1;
 
+int linux_mode = 0;
+int optee_mode = 1;
+
 // TODO: Set to 8, after OPTEE test case definition
 int syscase_max_args = 6;
 
@@ -44,21 +47,33 @@ TEEC_Result invokeCall(TEEC_Session *sess, char* input, u_long input_size)
 
 void usage(char *program)
 {
-  printf("usage:  %s [-t] [-p INPUT]\n", program);
+  printf("usage:  %s [-tLO] [-i INPUT]\n", program);
   printf("\t\t-t\ttest mode, do not use hypercalls\n");
   printf("\t\t-i\tparse mode, parse given file (implies test mode)\n");
+  printf("\t\t-L\tlinux mode, use 6 arguments\n");
+  printf("\t\t-O\tOPTEE mode, use 8 arguments\n");
   exit(1);
 }
 
 void process_options(int argc, char **argv, char **input, u_long *input_size)
 {
   int opt;
-  while((opt = getopt (argc, argv, "i:t")) != -1) {
+  while((opt = getopt (argc, argv, "i:tLO")) != -1) {
     switch(opt) {
       case 'i':
         read_file(optarg, input, input_size);
       case 't':
         aflTestMode = 1;
+        break;
+      case 'O':
+        syscase_max_args = 8;
+        optee_mode = 1;
+        linux_mode= 0;
+        break;
+      case 'L':
+        syscase_max_args = 6;
+        optee_mode = 0;
+        linux_mode= 1;
         break;
       case '?':
       default:
@@ -95,8 +110,8 @@ void runTest(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
   dump_hex((unsigned char*) input, input_size);
 
   /* Trace agent */
-  //extern void _start(), __libc_start_main();
-  //startWork((u_long)_start, (u_long)__libc_start_main)
+  extern void _start(), __libc_start_main();
+  startWork((u_long)_start, (u_long)__libc_start_main);
 
   buffer_from(&buffer, input, input_size);
   parse_result = parse_test_case(&buffer, 3, syscase_max_args, test_case, &ncalls);
@@ -105,12 +120,15 @@ void runTest(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
   // if(parse_result == 0)
   dump_test_case(test_case, ncalls, syscase_max_args);
 
-  // trace_linux_kernel()
-
-  /* Trace OPTEE Core */
-  startWork(0xe100000, 0xe143fff);
-
-  invokeCall(sess, input, input_size);
+  if(linux_mode == 1) {
+    trace_linux_kernel(test_case, ncalls);
+  }
+  else {
+    /* Trace OPTEE Core */
+    printf("Trace OPTEE System Call\n");
+    startWork(0xe100000, 0xe143fff);
+    invokeCall(sess, input, input_size);
+  }
 
   doneWork(0);
 }
@@ -121,7 +139,8 @@ void runTest(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
 void trace_linux_kernel(test_case_t *test_case, int ncalls)
 {
   long linux_result;
+  printf("Trace Linux System Call\n");
   startWork(0xffff000000000000L, 0xffffffffffffffffL);
-  linux_result = execute_test_case(test_case, ncalls);
+  linux_result = execute_linux_test_case(test_case, ncalls);
   printf("system call result: %ld\n", linux_result);
 }
