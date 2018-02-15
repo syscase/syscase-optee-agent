@@ -230,7 +230,7 @@ int parse_argument_reference(struct buffer *buffer, struct parse_state *state, u
 
   if(get_u_int8_t(buffer, &call_index) == -1 || get_u_int8_t(buffer, &argument_index) == -1
       || call_index >= state->ncalls
-      || argument_index >= 6)
+      || argument_index >= NARGS)
     return -1;
 
   *value = state->calls[call_index].args[argument_index];
@@ -301,7 +301,7 @@ int parse_argument(struct buffer *buffer, struct parse_state *state, u_int64_t *
   return handler(buffer, state, value);
 }
 
-int parse_calls(struct system_call *calls, int ncalls, struct buffer *buffer, struct system_call *value)
+int parse_calls(struct system_call *calls, int max_args, int ncalls, struct buffer *buffer, struct system_call *value)
 {
   struct parse_state state;
 
@@ -321,7 +321,7 @@ int parse_calls(struct system_call *calls, int ncalls, struct buffer *buffer, st
   if(syscase_verbose)
     printf("call %d\n", value->no);
 
-  for(int i = 0; i < 6; i++) {
+  for(int i = 0; i < max_args; i++) {
     if(syscase_verbose)
       printf("arg %d: ", i);
     if(parse_argument(buffer, &state, &value->args[i]) == -1)
@@ -331,18 +331,22 @@ int parse_calls(struct system_call *calls, int ncalls, struct buffer *buffer, st
   return 0;
 }
 
-int parse_test_case(struct buffer *buffer, int max_calls, test_case_t *test_case, int *ncalls)
+int parse_test_case(struct buffer *buffer, int max_calls, int max_args, test_case_t *test_case, int *ncalls)
 {
   struct buffer buffers[10];
   size_t nbuffers;
 
   if(max_calls > 10)
     max_calls = 10;
+
+  if(max_args > NARGS)
+    max_args = NARGS;
+
   if(split_buffer(buffer, CALL_DELIMITER, sizeof CALL_DELIMITER - 1, max_calls, buffers, &nbuffers) == -1)
     return -1;
 
   for(size_t i = 0; i < nbuffers; i++) {
-    if(parse_calls(test_case, i, buffers + i, test_case + i) == -1)
+    if(parse_calls(test_case, max_args, i, buffers + i, test_case + i) == -1)
       return -1;
   }
 
@@ -351,26 +355,29 @@ int parse_test_case(struct buffer *buffer, int max_calls, test_case_t *test_case
   return 0;
 }
 
-void dump_call(struct system_call *value)
+void dump_call(struct system_call *value, int max_args)
 {
-  printf(
-      "syscall %d (%lx, %lx, %lx, %lx, %lx, %lx)\n",
-      value->no,
-      (u_long) value->args[0],
-      (u_long) value->args[1],
-      (u_long) value->args[2],
-      (u_long) value->args[3],
-      (u_long) value->args[4],
-      (u_long) value->args[5]
-  );
+  printf("syscall %d(", value->no);
+  for(int i = 0; i < max_args; i++) {
+    printf("%lx", (u_long) value->args[i]);
+    if(i == max_args - 1){
+      printf(")\n");
+      return;
+    }
+
+    printf(", ");
+  }
 }
 
-void dump_test_case(test_case_t *value, int n)
+void dump_test_case(test_case_t *value, int n, int max_args)
 {
   int i;
 
+  if(max_args > NARGS)
+    max_args = NARGS;
+
   for(i = 0; i < n; i++)
-      dump_call(value + i);
+      dump_call(value + i, max_args);
 }
 
 unsigned long execute_call(struct system_call *value)

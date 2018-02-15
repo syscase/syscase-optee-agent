@@ -11,6 +11,9 @@
 
 int syscase_verbose = 1;
 
+// TODO: Set to 8, after OPTEE test case definition
+int syscase_max_args = 6;
+
 TEEC_Result invokeCall(TEEC_Session *sess, char* input, u_long input_size)
 {
   uint32_t err_origin;
@@ -96,11 +99,11 @@ void runTest(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
   //startWork((u_long)_start, (u_long)__libc_start_main)
 
   buffer_from(&buffer, input, input_size);
-  parse_result = parse_test_case(&buffer, 3, test_case, &ncalls);
+  parse_result = parse_test_case(&buffer, 3, syscase_max_args, test_case, &ncalls);
 
   printf("read %ld bytes, parse result %d number of calls %d\n", input_size, parse_result, (int)ncalls);
   // if(parse_result == 0)
-  dump_test_case(test_case, ncalls);
+  dump_test_case(test_case, ncalls, syscase_max_args);
 
   // trace_linux_kernel()
 
