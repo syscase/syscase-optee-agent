@@ -52,8 +52,8 @@ int parse_calls(struct system_call *calls, int max_args, int ncalls, struct buff
 int parse_test_case(struct buffer *buffer, int max_calls, int max_args, test_case_t *test_case, int *ncalls);
 void dump_call(struct system_call *value, int max_args);
 void dump_test_case(test_case_t *value, int n, int max_args);
-unsigned long execute_call(struct system_call *value);
-unsigned long execute_test_case(test_case_t *value, int n);
+unsigned long execute_linux_call(struct system_call *value);
+unsigned long execute_linux_test_case(test_case_t *value, int n);
 
 int get_fd(int type);
 

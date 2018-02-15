@@ -380,7 +380,7 @@ void dump_test_case(test_case_t *value, int n, int max_args)
       dump_call(value + i, max_args);
 }
 
-unsigned long execute_call(struct system_call *value)
+unsigned long execute_linux_call(struct system_call *value)
 {
   return syscall(
       value->no,
@@ -393,13 +393,13 @@ unsigned long execute_call(struct system_call *value)
   );
 }
 
-unsigned long execute_test_case(test_case_t *value, int n)
+unsigned long execute_linux_test_case(test_case_t *value, int n)
 {
   unsigned long result;
   int i;
 
   result = 0;
   for(i = 0; i < n; i++)
-    result = execute_call(value + i);
+    result = execute_linux_call(value + i);
   return result;
 }
