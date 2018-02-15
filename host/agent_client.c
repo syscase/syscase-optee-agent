@@ -1,10 +1,15 @@
 #include <err.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "agent_client.h"
 
+#include "syscase/utils.h"
 #include "afl_call.h"
+#include "guard.h"
+
+int syscase_verbose = 1;
 
 TEEC_Result invokeCall(TEEC_Session *sess, char* input, u_long input_size)
 {
@@ -34,22 +39,70 @@ TEEC_Result invokeCall(TEEC_Session *sess, char* input, u_long input_size)
   return res;
 }
 
+void usage(char *program)
+{
+  printf("usage:  %s [-t] [-p INPUT]\n", program);
+  printf("\t\t-t\ttest mode, do not use hypercalls\n");
+  printf("\t\t-i\tparse mode, parse given file (implies test mode)\n");
+  exit(1);
+}
+
+void process_options(int argc, char **argv, char **input, u_long *input_size)
+{
+  int opt;
+  while((opt = getopt (argc, argv, "i:t")) != -1) {
+    switch(opt) {
+      case 'i':
+        read_file(optarg, input, input_size);
+      case 't':
+        aflTestMode = 1;
+        break;
+      case '?':
+      default:
+        usage(argv[0]);
+        break;
+    }
+  }
+}
+
+static void guard_handler(void)
+{
+  doneWork(0);
+}
+
 /*
  * Run test case
  */
-void runTest(TEEC_Context *ctx, TEEC_Session *sess)
+void runTest(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
 {
   u_long input_size;
   char *input;
-  input = getWork(&input_size);
+  struct buffer buffer;
+  int parse_result, ncalls;
+  test_case_t test_case[3];
+  input_size = 0;
+
+  process_options(argc, argv, &input, &input_size);
+
+  fork_guard(guard_handler);
+  startForkserver(0);
+  if(!input_size)
+    input = getWork(&input_size);
   printf("got work: %lu - %.*s\n", input_size, (int) input_size, input);
+  dump_hex((unsigned char*) input, input_size);
 
   /* Trace agent */
   //extern void _start(), __libc_start_main();
   //startWork((u_long)_start, (u_long)__libc_start_main)
 
-  /* Trace Linux Kernel */
-  //startWork(0xffff000000000000L, 0xffffffffffffffffL);
+  buffer_from(&buffer, input, input_size);
+  parse_result = parse_test_case(&buffer, 3, test_case, &ncalls);
+
+  printf("read %ld bytes, parse result %d number of calls %d\n", input_size, parse_result, (int)ncalls);
+  // if(parse_result == 0)
+  dump_test_case(test_case, ncalls);
+
+  // trace_linux_kernel()
 
   /* Trace OPTEE Core */
   startWork(0xe100000, 0xe143fff);
@@ -59,3 +112,13 @@ void runTest(TEEC_Context *ctx, TEEC_Session *sess)
   doneWork(0);
 }
 
+/*
+ * Trace Linux kernel
+ */
+void trace_linux_kernel(test_case_t *test_case, int ncalls)
+{
+  long linux_result;
+  startWork(0xffff000000000000L, 0xffffffffffffffffL);
+  linux_result = execute_test_case(test_case, ncalls);
+  printf("system call result: %ld\n", linux_result);
+}

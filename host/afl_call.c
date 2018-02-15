@@ -10,6 +10,7 @@
 #include "afl_call.h"
 
 int aflTestMode = 0;
+int started = 0;
 
 #define SZ 4096
 static u_long bufsz;
@@ -42,21 +43,25 @@ aflInit(void)
 static inline u_long
 aflCall(u_long a0, u_long a1, u_long a2)
 {
-    u_long ret;
-    asm("svc 0xfa32"
-            : "=r"(ret)
-            : "r"(a0), "r"(a1), "r"(a2)
-            );
-    return ret;
+  u_long ret;
+  asm("svc 0xfa32"
+          : "=r"(ret)
+          : "r"(a0), "r"(a1), "r"(a2)
+          );
+  return ret;
 }
 
 int
 startForkserver(int ticks)
 {
-    aflInit();
-    if(aflTestMode)
-        return 0;
-    return aflCall(1, ticks, 0);
+  u_long result;
+  aflInit();
+  if(aflTestMode || started)
+    return 0;
+
+  result = aflCall(1, ticks, 0);
+  started = 1;
+  return result;
 }
 
 char *
