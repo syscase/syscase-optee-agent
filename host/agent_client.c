@@ -15,9 +15,9 @@ int linux_mode = 0;
 int optee_mode = 1;
 
 // TODO: Set to 8, after OPTEE test case definition
-int syscase_max_args = 6;
+int syscase_max_args = 8;
 
-TEEC_Result invokeCall(TEEC_Session *sess, char* input, u_long input_size)
+TEEC_Result invokeCall(TEEC_Session *sess, test_case_t* test_case, u_long test_case_size, int ncalls)
 {
   uint32_t err_origin;
   TEEC_Operation op;
@@ -28,19 +28,19 @@ TEEC_Result invokeCall(TEEC_Session *sess, char* input, u_long input_size)
   // Prepare arguments
   op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT, TEEC_MEMREF_TEMP_INPUT,
                     TEEC_NONE, TEEC_NONE);
-  op.params[0].value.a = 43;
+  op.params[0].value.a = ncalls;
 
-	op.params[1].tmpref.buffer = input;
-	op.params[1].tmpref.size = input_size;
+	op.params[1].tmpref.buffer = test_case;
+	op.params[1].tmpref.size = test_case_size;
 
   // Invoke TA_AGENT_CMD_CALL
-  printf("Invoking call with argument: %d\n", op.params[0].value.a);
+  printf("Invoking call with ncalls: %d\n", ncalls);
   TEEC_Result res = TEEC_InvokeCommand(sess, TA_AGENT_CMD_CALL, &op,
                       &err_origin);
   if (res != TEEC_SUCCESS)
     errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x",
       res, err_origin);
-  printf("Receive TA response: %d\n", op.params[0].value.a);
+  printf("Receive TA system call result: %d\n", op.params[0].value.a);
 
   return res;
 }
@@ -127,7 +127,7 @@ void runTest(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
     /* Trace OPTEE Core */
     printf("Trace OPTEE System Call\n");
     startWork(0xe100000, 0xe143fff);
-    invokeCall(sess, input, input_size);
+    invokeCall(sess, test_case, sizeof(test_case), ncalls);
   }
 
   doneWork(0);
