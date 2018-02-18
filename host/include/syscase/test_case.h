@@ -2,20 +2,15 @@
 #define SYSCASE_TEST_CASE_H
 
 #include "syscase/buffer.h"
+#include "syscase/system_call.h"
 
 #define BUFFER_DELIMITER "\xa5\xc9"
 #define CALL_DELIMITER "\xb7\xe3"
 
-#define NARGS 8
 #define NBUFFERS 7
 #define SIZE_STACK_SIZE 256
 
 extern int syscase_verbose;
-
-struct system_call {
-    u_int16_t no;
-    u_int64_t args[NARGS];
-};
 
 struct parse_state {
   struct system_call *calls;
