@@ -12,6 +12,7 @@
 
 #include "syscase/buffer.h"
 #include "syscase/test_case.h"
+#include "syscase/linux/argument/fd.h"
 
 /* to ease compilation when memfd isnt supported on compilation host */
 #define MFD_CLOEXEC     0x0001U

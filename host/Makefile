@@ -7,18 +7,33 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 READELF = $(CROSS_COMPILE)readelf
 
 LDOBJS += client.o
-LDOBJS += afl_call.o
-LDOBJS += syscase/buffer.o
-LDOBJS += syscase/test_case.o
-LDOBJS += syscase/argument/file_descriptor.o
-LDOBJS += syscase/utils.o
+LDOBJS += utils.o
+LDOBJS += ../syscase/afl_call.o
+LDOBJS += ../syscase/buffer.o
+LDOBJS += ../syscase/parse_state.o
+LDOBJS += ../syscase/linux/parse_handler.o
+LDOBJS += ../syscase/linux/common.o
+LDOBJS += ../syscase/test_case.o
+LDOBJS += ../syscase/argument/number.o
+LDOBJS += ../syscase/argument/alloc.o
+LDOBJS += ../syscase/argument/buffer.o
+LDOBJS += ../syscase/argument/length.o
+LDOBJS += ../syscase/argument/vector_32.o
+LDOBJS += ../syscase/argument/vector_64.o
+LDOBJS += ../syscase/argument/reference.o
+LDOBJS += ../syscase/linux/argument/file.o
+LDOBJS += ../syscase/linux/argument/file_descriptor.o
+LDOBJS += ../syscase/linux/argument/fd.o
+LDOBJS += ../syscase/linux/argument/filename.o
+LDOBJS += ../syscase/linux/argument/pid.o
+LDOBJS += ../syscase/utils.o
 LDOBJS += guard.o
 LDOBJS += agent_client.o
 
 OBJS = main.o
 OBJS += $(LDOBJS)
 
-CFLAGS += -Wall -I../ta/include -I$(TEEC_EXPORT)/include -I./include
+CFLAGS += -Wall -I../syscase/include -I../ta/include -I$(TEEC_EXPORT)/include -I./include
 #Add/link other required libraries here
 LDADD += $(LDOBJS) -lteec -L$(TEEC_EXPORT)/lib
 

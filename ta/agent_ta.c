@@ -3,14 +3,17 @@
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
 #include <stdint.h>
-#include "syscase/ta_system_call.h"
+#include "syscase/system_call.h"
+#include "syscase/test_case.h"
 
 #include "agent_ta.h"
+
+int syscase_verbose = 1;
 
 int global;
 
 static inline uint32_t
-optee_system_call(struct ta_system_call *sc)
+optee_system_call(struct system_call *sc)
 {
   uint32_t ret;
   asm("mov x8, %[value]"
@@ -22,34 +25,6 @@ optee_system_call(struct ta_system_call *sc)
           );
   return ret;
 }
-
-static void dump_call(struct ta_system_call *value)
-{
-  printf("syscall %d(", value->no);
-  for(int i = 0; i < NARGS; i++) {
-    printf("%lx", (unsigned long) value->args[i]);
-    if(i == NARGS - 1){
-      printf(")\n");
-      return;
-    }
-
-    printf(", ");
-  }
-}
-
-static uint32_t execute_test_case(ta_test_case_t *value, int n)
-{
-  uint32_t result;
-  int i;
-
-  result = 0;
-  for(i = 0; i < n; i++) {
-    dump_call(value + i);
-    result = optee_system_call(value + i);
-  }
-  return result;
-}
-
 
 /*
  * Called when the instance of the TA is created. This is the first call in
@@ -118,7 +93,7 @@ void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx)
 static TEE_Result call(uint32_t param_types,
 	TEE_Param params[4])
 {
-  ta_test_case_t* test_case;
+  test_case_t* test_case;
   uint64_t test_case_size;
   int ncalls;
   uint32_t result;
@@ -139,6 +114,7 @@ static TEE_Result call(uint32_t param_types,
 	IMSG("TA AGENT: With test case size: %lu", test_case_size);
 	IMSG("TA AGENT: With ncalls: %u", ncalls);
 	IMSG("TA AGENT: Execute test case:");
+  dump_test_case(test_case, ncalls, NARGS);
   result = execute_test_case(test_case, ncalls);
 	params[0].value.a = result;
 	IMSG("TA AGENT response: %u", result);

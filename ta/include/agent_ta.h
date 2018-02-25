@@ -1,7 +1,7 @@
 #ifndef TA_AGENT_H
 #define TA_AGENT_H
 
-#include "syscase/ta_system_call.h"
+#include "syscase/system_call.h"
 
 /* This UUID is generated with uuidgen
    the ITU-T UUID generator at http://www.itu.int/ITU-T/asn1/uuid.html */
