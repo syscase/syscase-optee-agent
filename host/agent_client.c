@@ -1,12 +1,14 @@
 #include <err.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "agent_client.h"
 
+#include "syscase/afl_call.h"
 #include "syscase/utils.h"
-#include "afl_call.h"
+#include "utils.h"
 #include "guard.h"
 
 int syscase_verbose = 1;
@@ -17,7 +19,7 @@ int optee_mode = 1;
 // TODO: Set to 8, after OPTEE test case definition
 int syscase_max_args = 8;
 
-TEEC_Result invokeCall(TEEC_Session *sess, test_case_t* test_case, u_long test_case_size, int ncalls)
+TEEC_Result invokeCall(TEEC_Session *sess, test_case_t* test_case, sc_u_long test_case_size, int ncalls)
 {
   uint32_t err_origin;
   TEEC_Operation op;
@@ -55,7 +57,7 @@ void usage(char *program)
   exit(1);
 }
 
-void process_options(int argc, char **argv, char **input, u_long *input_size)
+void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
 {
   int opt;
   while((opt = getopt (argc, argv, "i:tLO")) != -1) {
@@ -63,7 +65,7 @@ void process_options(int argc, char **argv, char **input, u_long *input_size)
       case 'i':
         read_file(optarg, input, input_size);
       case 't':
-        aflTestMode = 1;
+        afl_test_mode = 1;
         break;
       case 'O':
         syscase_max_args = 8;
@@ -85,7 +87,7 @@ void process_options(int argc, char **argv, char **input, u_long *input_size)
 
 static void guard_handler(void)
 {
-  doneWork(0);
+  done_work(0);
 }
 
 /*
@@ -93,7 +95,7 @@ static void guard_handler(void)
  */
 void runTest(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
 {
-  u_long input_size;
+  sc_u_long input_size;
   char *input;
   struct buffer buffer;
   int parse_result, ncalls;
@@ -103,15 +105,15 @@ void runTest(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
   process_options(argc, argv, &input, &input_size);
 
   fork_guard(guard_handler);
-  startForkserver(0);
+  start_forkserver(0);
   if(!input_size)
-    input = getWork(&input_size);
+    input = get_work(&input_size);
   printf("got work: %lu - %.*s\n", input_size, (int) input_size, input);
   dump_hex((unsigned char*) input, input_size);
 
   /* Trace agent */
   extern void _start(), __libc_start_main();
-  startWork((u_long)_start, (u_long)__libc_start_main);
+  start_work((sc_u_long)_start, (sc_u_long)__libc_start_main);
 
   buffer_from(&buffer, input, input_size);
   parse_result = parse_test_case(&buffer, 3, syscase_max_args, test_case, &ncalls);
@@ -126,11 +128,11 @@ void runTest(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
   else {
     /* Trace OPTEE Core */
     printf("Trace OPTEE System Call\n");
-    startWork(0xe100000, 0xe143fff);
+    start_work(0xe100000, 0xe143fff);
     invokeCall(sess, test_case, sizeof(test_case), ncalls);
   }
 
-  doneWork(0);
+  done_work(0);
 }
 
 /*
@@ -140,7 +142,7 @@ void trace_linux_kernel(test_case_t *test_case, int ncalls)
 {
   long linux_result;
   printf("Trace Linux System Call\n");
-  startWork(0xffff000000000000L, 0xffffffffffffffffL);
-  linux_result = execute_linux_test_case(test_case, ncalls);
+  start_work(0xffff000000000000L, 0xffffffffffffffffL);
+  linux_result = execute_test_case(test_case, ncalls);
   printf("system call result: %ld\n", linux_result);
 }
