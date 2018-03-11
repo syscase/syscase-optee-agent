@@ -3,28 +3,11 @@
 #include <tee_internal_api.h>
 #include <tee_internal_api_extensions.h>
 #include <stdint.h>
-#include "syscase/system_call.h"
-#include "syscase/test_case.h"
+#include "syscase/test_run.h"
 
 #include "agent_ta.h"
 
 int syscase_verbose = 1;
-
-int global;
-
-static inline uint32_t
-optee_system_call(struct system_call *sc)
-{
-  uint32_t ret;
-  asm("mov x8, %[value]"
-          :
-          : [value] "r" (sc->no));
-  asm("svc #0"
-          : "=r"(ret)
-          : "r"(sc->args[0]), "r"(sc->args[1]), "r"(sc->args[2]), "r"(sc->args[3]), "r"(sc->args[4]), "r"(sc->args[5]), "r"(sc->args[6]), "r"(sc->args[7])
-          );
-  return ret;
-}
 
 /*
  * Called when the instance of the TA is created. This is the first call in
@@ -93,10 +76,10 @@ void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx)
 static TEE_Result call(uint32_t param_types,
 	TEE_Param params[4])
 {
-  test_case_t* test_case;
-  uint64_t test_case_size;
-  int ncalls;
-  uint32_t result;
+  char* input;
+  sc_u_long input_size;
+  int trace;
+  sc_u_long result;
 
 	uint32_t exp_param_types = TEE_PARAM_TYPES(TEE_PARAM_TYPE_VALUE_INOUT,
 						   TEE_PARAM_TYPE_MEMREF_INPUT,
@@ -108,17 +91,33 @@ static TEE_Result call(uint32_t param_types,
 	if (param_types != exp_param_types)
 		return TEE_ERROR_BAD_PARAMETERS;
 
-  test_case = params[1].memref.buffer;
-  test_case_size = params[1].memref.size;
-  ncalls = params[0].value.a;
-	IMSG("TA AGENT: With test case size: %lu", test_case_size);
-	IMSG("TA AGENT: With ncalls: %u", ncalls);
+  trace = params[0].value.a;
+  if(!trace) {
+    input = params[1].memref.buffer;
+    input_size = params[1].memref.size;
+	  IMSG("TA AGENT: With input size: %lu", input_size);
+  } else {
+    input = NULL;
+    input_size = 0;
+  }
+
+	IMSG("TA AGENT: With trace mode: %u", trace);
 	IMSG("TA AGENT: Execute test case:");
-  dump_test_case(test_case, ncalls, NARGS);
-  result = execute_test_case(test_case, ncalls);
+
+  result = trace_test_case(
+      input,
+      input_size,
+      // TA
+      0x40000000,
+      0x3fe00000,
+      // OPTEE core
+      0xe100000,
+      0xe143fff,
+      trace
+  );
+
 	params[0].value.a = result;
-	IMSG("TA AGENT response: %u", result);
-	IMSG("global: %p", (void*)&global);
+	IMSG("TA AGENT response: %lu", result);
 
 	return TEE_SUCCESS;
 }

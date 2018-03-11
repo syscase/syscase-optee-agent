@@ -7,6 +7,7 @@
 #include "agent_client.h"
 
 #include "syscase/afl_call.h"
+#include "syscase/test_run.h"
 #include "syscase/utils.h"
 #include "utils.h"
 #include "guard.h"
@@ -15,11 +16,9 @@ int syscase_verbose = 1;
 
 int linux_mode = 0;
 int optee_mode = 1;
+int trace = 1;
 
-// TODO: Set to 8, after OPTEE test case definition
-int syscase_max_args = 8;
-
-TEEC_Result invokeCall(TEEC_Session *sess, test_case_t* test_case, sc_u_long test_case_size, int ncalls)
+TEEC_Result invoke_call(TEEC_Session *sess, char *input, sc_u_long input_size)
 {
   uint32_t err_origin;
   TEEC_Operation op;
@@ -30,13 +29,14 @@ TEEC_Result invokeCall(TEEC_Session *sess, test_case_t* test_case, sc_u_long tes
   // Prepare arguments
   op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT, TEEC_MEMREF_TEMP_INPUT,
                     TEEC_NONE, TEEC_NONE);
-  op.params[0].value.a = ncalls;
 
-	op.params[1].tmpref.buffer = test_case;
-	op.params[1].tmpref.size = test_case_size;
+  op.params[0].value.a = trace;
+  if(!trace) {
+	  op.params[1].tmpref.buffer = input;
+	  op.params[1].tmpref.size = input_size;
+  }
 
   // Invoke TA_AGENT_CMD_CALL
-  printf("Invoking call with ncalls: %d\n", ncalls);
   TEEC_Result res = TEEC_InvokeCommand(sess, TA_AGENT_CMD_CALL, &op,
                       &err_origin);
   if (res != TEEC_SUCCESS)
@@ -65,15 +65,13 @@ void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
       case 'i':
         read_file(optarg, input, input_size);
       case 't':
-        afl_test_mode = 1;
+        trace = 0;
         break;
       case 'O':
-        syscase_max_args = 8;
         optee_mode = 1;
         linux_mode= 0;
         break;
       case 'L':
-        syscase_max_args = 6;
         optee_mode = 0;
         linux_mode= 1;
         break;
@@ -87,62 +85,46 @@ void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
 
 static void guard_handler(void)
 {
-  done_work(0);
+  done_work(0, trace);
 }
 
 /*
  * Run test case
  */
-void runTest(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
+void run_test(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
 {
   sc_u_long input_size;
   char *input;
-  struct buffer buffer;
-  int parse_result, ncalls;
-  test_case_t test_case[3];
-  input_size = 0;
 
   process_options(argc, argv, &input, &input_size);
 
   fork_guard(guard_handler);
-  start_forkserver(0);
-  if(!input_size)
-    input = get_work(&input_size);
-  printf("got work: %lu - %.*s\n", input_size, (int) input_size, input);
-  dump_hex((unsigned char*) input, input_size);
-
-  /* Trace agent */
-  extern void _start(), __libc_start_main();
-  start_work((sc_u_long)_start, (sc_u_long)__libc_start_main);
-
-  buffer_from(&buffer, input, input_size);
-  parse_result = parse_test_case(&buffer, 3, syscase_max_args, test_case, &ncalls);
-
-  printf("read %ld bytes, parse result %d number of calls %d\n", input_size, parse_result, (int)ncalls);
-  // if(parse_result == 0)
-  dump_test_case(test_case, ncalls, syscase_max_args);
 
   if(linux_mode == 1) {
-    trace_linux_kernel(test_case, ncalls);
+    trace_linux_kernel(input, input_size);
   }
   else {
     /* Trace OPTEE Core */
-    printf("Trace OPTEE System Call\n");
-    start_work(0xe100000, 0xe143fff);
-    invokeCall(sess, test_case, sizeof(test_case), ncalls);
+    printf("Trace OPTEE System Call: Forward input to TA\n");
+    invoke_call(sess, input, input_size);
   }
-
-  done_work(0);
 }
 
 /*
  * Trace Linux kernel
  */
-void trace_linux_kernel(test_case_t *test_case, int ncalls)
+void trace_linux_kernel(char *input, sc_u_long input_size)
 {
-  long linux_result;
-  printf("Trace Linux System Call\n");
-  start_work(0xffff000000000000L, 0xffffffffffffffffL);
-  linux_result = execute_test_case(test_case, ncalls);
-  printf("system call result: %ld\n", linux_result);
+  /* Trace agent */
+  extern void _start(), __libc_start_main();
+
+  trace_test_case(
+      input,
+      input_size,
+      (sc_u_long)_start,
+      (sc_u_long)__libc_start_main,
+      0xffff000000000000L,
+      0xffffffffffffffffL,
+      trace
+  );
 }

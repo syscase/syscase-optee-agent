@@ -3,11 +3,10 @@
 
 #include "syscase/types.h"
 
-extern int afl_test_mode;
-int start_forkserver(int ticks);
-char *get_work(sc_u_long *sizep);
-int start_work(sc_u_int64_t start, sc_u_int64_t end);
-int done_work(int val);
+int start_forkserver(int ticks, int trace);
+char* get_work(sc_u_long *sizep);
+int start_work(sc_u_int64_t start, sc_u_int64_t end, int trace);
+int done_work(int value, int trace);
 
 #endif /*SYSCASE_AFL_CALL_H*/
 

@@ -9,6 +9,7 @@ READELF = $(CROSS_COMPILE)readelf
 LDOBJS += client.o
 LDOBJS += utils.o
 LDOBJS += ../syscase/afl_call.o
+LDOBJS += ../syscase/test_run.o
 LDOBJS += ../syscase/buffer.o
 LDOBJS += ../syscase/parse_state.o
 LDOBJS += ../syscase/linux/parse_handler.o

@@ -19,20 +19,29 @@ int parse_argument(struct buffer *buffer, struct parse_state *state, int index, 
 
 int parse_calls(struct system_call *calls, int max_args, int ncalls, struct buffer *buffer, struct system_call *value)
 {
-  struct parse_state state;
+  struct parse_state *state;
+  sc_size_t state_size;
 
-  if(split_buffer(buffer, BUFFER_DELIMITER, sizeof BUFFER_DELIMITER - 1, NBUFFERS, state.buffers, &state.nbuffers) == -1
-      || state.nbuffers < 1)
+  state_size = sizeof(struct parse_state);
+  state = sc_malloc(state_size);
+  sc_memset(state, 0, state_size);
+
+  sc_printf("split buffers\n");
+  if(split_buffer(buffer, BUFFER_DELIMITER, sizeof BUFFER_DELIMITER - 1, NBUFFERS, state->buffers, &state->nbuffers) == -1
+      || state->nbuffers < 1)
     return -1;
 
-  buffer = &state.buffers[0];
-  state.buffer_pos = 1;
-  state.stack_pos = 0;
-  state.calls = calls;
-  state.ncalls = ncalls;
+  buffer = &state->buffers[0];
+  state->buffer_pos = 1;
+  state->stack_pos = 0;
+  state->calls = calls;
+  state->ncalls = ncalls;
 
-  if(get_u_int16_t(buffer, &value->no) == -1)
+  if(get_u_int16_t(buffer, &value->no) == -1) {
+    sc_printf("Can not parse system call number!\n");
+    sc_free(state);
     return -1;
+  }
 
   if(syscase_verbose)
     sc_printf("call %d\n", value->no);
@@ -40,10 +49,14 @@ int parse_calls(struct system_call *calls, int max_args, int ncalls, struct buff
   for(int i = 0; i < max_args; i++) {
     if(syscase_verbose)
       sc_printf("arg %d: ", i);
-    if(parse_argument(buffer, &state, i, &value->args[i]) == -1)
+    if(parse_argument(buffer, state, i, &value->args[i]) == -1) {
+      sc_printf("Can not parse argument %d!\n", i);
+      sc_free(state);
       return -1;
+    }
   }
 
+  sc_free(state);
   return 0;
 }
 
@@ -58,9 +71,11 @@ int parse_test_case(struct buffer *buffer, int max_calls, int max_args, test_cas
   if(max_args > NARGS)
     max_args = NARGS;
 
+  sc_printf("split calls\n");
   if(split_buffer(buffer, CALL_DELIMITER, sizeof CALL_DELIMITER - 1, max_calls, buffers, &nbuffers) == -1)
     return -1;
 
+  sc_printf("parse calls\n");
   for(sc_size_t i = 0; i < nbuffers; i++) {
     if(parse_calls(test_case, max_args, i, buffers + i, test_case + i) == -1)
       return -1;
@@ -96,9 +111,9 @@ void dump_test_case(test_case_t *value, int n, int max_args)
       dump_call(value + i, max_args);
 }
 
-unsigned long execute_test_case(test_case_t *value, int n)
+sc_u_long execute_test_case(test_case_t *value, int n)
 {
-  unsigned long result;
+  sc_u_long result;
   int i;
 
   result = 0;
