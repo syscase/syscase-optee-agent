@@ -10,6 +10,8 @@
 #include "syscase/system_call.h"
 #include "syscase/common.h"
 
+int syscase_max_args = 6;
+
 void *sc_malloc(sc_size_t size)
 {
   return malloc(size);
@@ -17,6 +19,10 @@ void *sc_malloc(sc_size_t size)
 
 void *sc_memset(void *s, int c, sc_size_t n) {
   return memset(s, c, n);
+}
+
+void sc_free(void *ptr) {
+  free(ptr);
 }
 
 void *sc_memmem(const void *haystack, sc_size_t haystacklen, const void *needle, sc_size_t needlelen)
