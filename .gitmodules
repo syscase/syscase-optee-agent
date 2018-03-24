@@ -1,0 +1,3 @@
+[submodule "smcchar"]
+	path = smcchar
+	url = git@github.com:zaidan/smcchar.git

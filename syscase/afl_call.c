@@ -29,12 +29,16 @@ static void afl_init(void)
 
 static inline sc_u_long afl_call(sc_u_long a0, sc_u_long a1, sc_u_long a2)
 {
+#if !defined(SYSCASE_DUMMY)
   sc_u_long ret;
   asm("svc 0xfa32"
           : "=r"(ret)
           : "r"(a0), "r"(a1), "r"(a2)
           );
   return ret;
+#else
+  return 0;
+#endif
 }
 
 int start_forkserver(int ticks, int trace)
