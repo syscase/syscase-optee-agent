@@ -31,15 +31,24 @@ unsigned long sc_syscall(struct system_call *sc)
   uint32_t ret;
   sc_printf("sc_syscall optee\n");
   asm volatile(
-      "mov x8, %[no]\n\t"
-      "mov x0, %[a0]\n\t"
-      "mov x1, %[a1]\n\t"
-      "mov x2, %[a2]\n\t"
-      "mov x3, %[a3]\n\t"
-      "mov x4, %[a4]\n\t"
-      "mov x5, %[a5]\n\t"
-      "mov x6, %[a6]\n\t"
-      "mov x7, %[a7]\n\t"
+      "str %[a7], [sp, #-16]!\n\t"
+      "str %[a6], [sp, #-16]!\n\t"
+      "str %[a5], [sp, #-16]!\n\t"
+      "str %[a4], [sp, #-16]!\n\t"
+      "str %[a3], [sp, #-16]!\n\t"
+      "str %[a2], [sp, #-16]!\n\t"
+      "str %[a1], [sp, #-16]!\n\t"
+      "str %[a0], [sp, #-16]!\n\t"
+      "str %[no], [sp, #-16]!\n\t"
+      "ldr x8, [sp], #16\n\t"
+      "ldr x0, [sp], #16\n\t"
+      "ldr x1, [sp], #16\n\t"
+      "ldr x2, [sp], #16\n\t"
+      "ldr x3, [sp], #16\n\t"
+      "ldr x4, [sp], #16\n\t"
+      "ldr x5, [sp], #16\n\t"
+      "ldr x6, [sp], #16\n\t"
+      "ldr x7, [sp], #16\n\t"
       "svc #0"
       : "=r"(ret)
       : [no] "r" (sc->no),

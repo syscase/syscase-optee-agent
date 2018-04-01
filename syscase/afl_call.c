@@ -27,14 +27,24 @@ static void afl_init(void)
   afl_init = 1;
 }
 
-static inline sc_u_long afl_call(sc_u_long a0, sc_u_long a1, sc_u_long a2)
+static sc_u_long afl_call(sc_u_long a0, sc_u_long a1, sc_u_long a2)
 {
 #if !defined(SYSCASE_DUMMY)
   sc_u_long ret;
-  asm("svc 0xfa32"
-          : "=r"(ret)
-          : "r"(a0), "r"(a1), "r"(a2)
-          );
+  sc_printf("afl call %lx, %lx, %lx\n", a0, a1, a2);
+  asm volatile (
+      "str %[a2], [sp, #-16]!\n\t"
+      "str %[a1], [sp, #-16]!\n\t"
+      "str %[a0], [sp, #-16]!\n\t"
+      "ldr x0, [sp], #16\n\t"
+      "ldr x1, [sp], #16\n\t"
+      "ldr x2, [sp], #16\n\t"
+      "svc 0xfa32"
+      : "=r"(ret)
+      : [a0] "r" (a0),
+        [a1] "r" (a1),
+        [a2] "r" (a2)
+  );
   return ret;
 #else
   return 0;
