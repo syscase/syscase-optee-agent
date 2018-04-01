@@ -9,6 +9,7 @@
 #include "syscase/afl_call.h"
 #include "syscase/test_run.h"
 #include "syscase/utils.h"
+#include "syscase/smcchar/smc_call.h"
 #include "utils.h"
 #include "guard.h"
 
@@ -53,13 +54,14 @@ void usage(char *program)
   printf("\t\t-i\tparse mode, parse given file (implies test mode)\n");
   printf("\t\t-L\tlinux mode, use 6 arguments\n");
   printf("\t\t-O\tOPTEE mode, use 8 arguments\n");
+  printf("\t\t-S\tSMC mode, use 8 arguments\n");
   exit(1);
 }
 
 void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
 {
   int opt;
-  while((opt = getopt (argc, argv, "i:tLO")) != -1) {
+  while((opt = getopt (argc, argv, "i:tLOS")) != -1) {
     switch(opt) {
       case 'i':
         read_file(optarg, input, input_size);
@@ -72,6 +74,8 @@ void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
       case 'L':
         fuzzing_mode = MODE_LINUX;
         break;
+      case 'S':
+        fuzzing_mode = MODE_SMC;
         break;
       case '?':
       default:
@@ -106,6 +110,11 @@ void run_test(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
       /* Trace OPTEE Core */
       printf("Trace OPTEE System Call: Forward input to TA\n");
       invoke_call(sess, input, input_size);
+      break;
+    case MODE_SMC:
+      /* Trace OPTEE SMC call */
+      printf("Trace OPTEE Secure Monitor Call: Forward input to SMC Kernel Module\n");
+      smc_call(input, input_size, trace);
       break;
     default:
       usage(argv[0]);
