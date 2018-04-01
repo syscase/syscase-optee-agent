@@ -28,13 +28,14 @@ LDOBJS += ../syscase/linux/argument/fd.o
 LDOBJS += ../syscase/linux/argument/filename.o
 LDOBJS += ../syscase/linux/argument/pid.o
 LDOBJS += ../syscase/utils.o
+LDOBJS += ../smcchar/smc_call.o
 LDOBJS += guard.o
 LDOBJS += agent_client.o
 
 OBJS = main.o
 OBJS += $(LDOBJS)
 
-CFLAGS += -Wall -I../syscase/include -I../ta/include -I$(TEEC_EXPORT)/include -I./include
+CFLAGS += -Wall -I../syscase/include -I../smcchar/include -I../ta/include -I$(TEEC_EXPORT)/include -I./include
 #Add/link other required libraries here
 LDADD += $(LDOBJS) -lteec -L$(TEEC_EXPORT)/lib
 
