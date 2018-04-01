@@ -41,7 +41,8 @@ int sc_printf(const char *format, ...)
 unsigned long sc_syscall(struct system_call *value)
 {
 #if !defined(SYSCASE_DUMMY)
-  struct arm_smccc_res *res;
+  struct arm_smccc_res *res = NULL;
+  sc_printf("sc_syscall: arm_smccc_smc");
   arm_smccc_smc(
   // Do not use system call number for smc to support arbitrary values for
   // first smc argument
@@ -57,7 +58,7 @@ unsigned long sc_syscall(struct system_call *value)
       res
   );
 
-  sc_printf("Secure monitor call result: [%lu, %lu, %lu]\n", res->a0, res->a1, res->2);
+  sc_printf("Secure monitor call result: [%lu, %lu, %lu]\n", res->a0, res->a1, res->a2);
   return res->a0;
 #else
   return 0;
