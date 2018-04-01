@@ -14,8 +14,7 @@
 
 int syscase_verbose = 1;
 
-int linux_mode = 0;
-int optee_mode = 1;
+int fuzzing_mode = MODE_OPTEE;
 int trace = 1;
 
 TEEC_Result invoke_call(TEEC_Session *sess, char *input, sc_u_long input_size)
@@ -68,12 +67,11 @@ void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
         trace = 0;
         break;
       case 'O':
-        optee_mode = 1;
-        linux_mode= 0;
+        fuzzing_mode = MODE_OPTEE;
         break;
       case 'L':
-        optee_mode = 0;
-        linux_mode= 1;
+        fuzzing_mode = MODE_LINUX;
+        break;
         break;
       case '?':
       default:
@@ -100,13 +98,17 @@ void run_test(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
 
   fork_guard(guard_handler);
 
-  if(linux_mode == 1) {
-    trace_linux_kernel(input, input_size);
-  }
-  else {
-    /* Trace OPTEE Core */
-    printf("Trace OPTEE System Call: Forward input to TA\n");
-    invoke_call(sess, input, input_size);
+  switch(fuzzing_mode) {
+    case MODE_LINUX:
+      trace_linux_kernel(input, input_size);
+      break;
+    case MODE_OPTEE:
+      /* Trace OPTEE Core */
+      printf("Trace OPTEE System Call: Forward input to TA\n");
+      invoke_call(sess, input, input_size);
+      break;
+    default:
+      usage(argv[0]);
   }
 }
 
