@@ -7,6 +7,21 @@
 **Implemented enhancements:**
 
 - Add CHANGELOG [\#5](https://github.com/zaidan/optee_agent/issues/5)
+- Add SMC call fuzzing [\#17](https://github.com/zaidan/optee_agent/pull/17) ([zaidan](https://github.com/zaidan))
+- Add .checkpatch.conf [\#15](https://github.com/zaidan/optee_agent/pull/15) ([zaidan](https://github.com/zaidan))
+- Add common.c for SMC call fuzzing [\#14](https://github.com/zaidan/optee_agent/pull/14) ([zaidan](https://github.com/zaidan))
+- Add parsing and basic OPTEE system call fuzzing support in TA [\#13](https://github.com/zaidan/optee_agent/pull/13) ([zaidan](https://github.com/zaidan))
+- Refactor Syscase to support parsing in TA [\#11](https://github.com/zaidan/optee_agent/pull/11) ([zaidan](https://github.com/zaidan))
+- Add OPTEE system call execution [\#10](https://github.com/zaidan/optee_agent/pull/10) ([zaidan](https://github.com/zaidan))
+-  Add Linux and OPTEE mode to switch between tracing targets [\#9](https://github.com/zaidan/optee_agent/pull/9) ([zaidan](https://github.com/zaidan))
+- Add support for variable system call argument array length [\#8](https://github.com/zaidan/optee_agent/pull/8) ([zaidan](https://github.com/zaidan))
+- Add test case parsing [\#7](https://github.com/zaidan/optee_agent/pull/7) ([zaidan](https://github.com/zaidan))
+- Send input string to TA [\#6](https://github.com/zaidan/optee_agent/pull/6) ([zaidan](https://github.com/zaidan))
+
+**Fixed bugs:**
+
+- Compiled LKM does not write correct arguments for afl\_call hypercall [\#16](https://github.com/zaidan/optee_agent/issues/16)
+- Fix OPTEE system call arguments [\#12](https://github.com/zaidan/optee_agent/pull/12) ([zaidan](https://github.com/zaidan))
 
 ## [0.1.0](https://github.com/zaidan/optee_agent/tree/0.1.0) (2018-02-01)
 
