@@ -55,7 +55,7 @@ unsigned long sc_syscall(struct system_call *value)
       &res
   );
 
-  sc_printf("Secure monitor call result: [%lu, %lu, %lu]\n", res.a0, res.a1, res.a2);
+  sc_printf("Secure monitor call result: [%lx, %lx, %lx, %lx]\n", res.a0, res.a1, res.a2, res.a3);
   return res.a0;
 #else
   return 0;
