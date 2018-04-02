@@ -37,8 +37,13 @@ int parse_calls(struct system_call *calls, int max_args, int ncalls, struct buff
   state->calls = calls;
   state->ncalls = ncalls;
 
+#if !defined(SYSCASE_SMC)
   if(get_u_int16_t(buffer, &value->no) == -1) {
     sc_printf("Can not parse system call number!\n");
+#else
+  if(parse_argument(buffer,state, -1, &value->no) == -1) {
+    sc_printf("Can not parse SMC call identifier!\n");
+#endif
     sc_free(state);
     return -1;
   }
@@ -88,7 +93,11 @@ int parse_test_case(struct buffer *buffer, int max_calls, int max_args, test_cas
 
 void dump_call(struct system_call *value, int max_args)
 {
-  sc_printf("syscall %d(", value->no);
+#if !defined(SYSCASE_SMC)
+  sc_printf("syscall %d (", value->no);
+#else
+  sc_printf("syscall %lx (", value->no);
+#endif
   for(int i = 0; i < max_args; i++) {
     sc_printf("%lx", (sc_u_long) value->args[i]);
     if(i == max_args - 1){
