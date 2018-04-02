@@ -19,7 +19,9 @@ sc_u_long trace_test_case(char *input, sc_u_long input_size, sc_u_int64_t start_
     input = get_work(&input_size);
   }
   sc_printf("got work: %lu - %.*s\n", input_size, (int) input_size, input);
+#ifdef SYSCASE_DEBUG
   dump_hex((unsigned char*) input, input_size);
+#endif
 
   /* Trace parsing */
   start_work(start_parse, end_parse, trace);
