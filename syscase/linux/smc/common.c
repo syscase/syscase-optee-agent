@@ -7,7 +7,7 @@
 #include "syscase/system_call.h"
 #include "syscase/common.h"
 
-int syscase_max_args = 8;
+int syscase_max_args = 7;
 
 void *sc_malloc(sc_size_t size)
 {
@@ -44,9 +44,7 @@ unsigned long sc_syscall(struct system_call *value)
   struct arm_smccc_res res;
   sc_printf("sc_syscall: arm_smccc_smc");
   arm_smccc_smc(
-  // Do not use system call number for smc to support arbitrary values for
-  // first smc argument
-  //    value->no,
+      value->no,
       value->args[0],
       value->args[1],
       value->args[2],
@@ -54,7 +52,6 @@ unsigned long sc_syscall(struct system_call *value)
       value->args[4],
       value->args[5],
       value->args[6],
-      value->args[7],
       &res
   );
 
