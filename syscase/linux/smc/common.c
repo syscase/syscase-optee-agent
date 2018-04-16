@@ -38,12 +38,9 @@ int sc_printf(const char *format, ...)
   return result;
 }
 
-unsigned long sc_syscall(struct system_call *value)
+static void sc_smc_call(struct system_call *value, struct arm_smccc_res *res)
 {
-#if !defined(SYSCASE_DUMMY)
-  struct arm_smccc_res res;
-  sc_printf("sc_syscall: arm_smccc_smc");
-  arm_smccc_smc(
+  return arm_smccc_smc(
       value->no,
       value->args[0],
       value->args[1],
@@ -52,8 +49,16 @@ unsigned long sc_syscall(struct system_call *value)
       value->args[4],
       value->args[5],
       value->args[6],
-      &res
+      res
   );
+}
+
+unsigned long sc_syscall(struct system_call *value)
+{
+#if !defined(SYSCASE_DUMMY)
+  struct arm_smccc_res res;
+  sc_printf("sc_syscall: arm_smccc_smc");
+  sc_smc_call(value, &res);
 
   sc_printf("Secure monitor call result: [%lx, %lx, %lx, %lx]\n", res.a0, res.a1, res.a2, res.a3);
   return res.a0;
