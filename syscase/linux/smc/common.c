@@ -6,6 +6,7 @@
 #include "vendor/string.h"
 #include "syscase/system_call.h"
 #include "syscase/common.h"
+#include "syscase/optee/smc/argument/msg_type.h"
 
 int syscase_max_args = 7;
 
@@ -53,10 +54,29 @@ static void sc_smc_call(struct system_call *value, struct arm_smccc_res *res)
   );
 }
 
+static void sc_smc_split(struct system_call *value)
+{
+  int i;
+  sc_u_int64_t addr;
+  sc_u_int32_t reg0, reg1;
+  // Do not check last argument
+  for(i = 0; i < NARGS - 1 ; i++) {
+    if(value->types[i] == ARG_OPTEE_MSG) {
+      addr = value->args[i];
+      reg0 = addr >> 32;
+      reg1 = addr;
+      value->args[i] = reg0;
+      value->args[i+1] = reg1;
+      sc_printf("Split argument %d: %lx -> (%x, %x)", i, (sc_u_long) addr, reg0, reg1);
+    }
+  }
+}
+
 unsigned long sc_syscall(struct system_call *value)
 {
 #if !defined(SYSCASE_DUMMY)
   struct arm_smccc_res res;
+  sc_smc_split(value);
   sc_printf("sc_syscall: arm_smccc_smc");
   sc_smc_call(value, &res);
 
