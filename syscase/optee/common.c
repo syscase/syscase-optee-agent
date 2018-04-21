@@ -30,6 +30,18 @@ unsigned long sc_syscall(struct system_call *sc)
 {
   uint32_t ret;
   sc_printf("sc_syscall optee\n");
+  if(sc->no == 0) {
+    sc_printf("ignore system call: return\n");
+    return 0;
+  }
+  if(sc->no == 2) {
+    sc_printf("ignore system call: panic\n");
+    return 0;
+  }
+  if(sc->no == 12) {
+    sc_printf("ignore system call: wait\n");
+    return 0;
+  }
   asm volatile(
       "str %[a7], [sp, #-16]!\n\t"
       "str %[a6], [sp, #-16]!\n\t"
