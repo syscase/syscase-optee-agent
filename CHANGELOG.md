@@ -1,5 +1,22 @@
 # Change Log
 
+## [Unreleased](https://github.com/zaidan/optee_agent/tree/HEAD)
+
+[Full Changelog](https://github.com/zaidan/optee_agent/compare/0.4.0...HEAD)
+
+**Implemented enhancements:**
+
+- Add blacklisting of OPTEE system calls [\#20](https://github.com/zaidan/optee_agent/pull/20) ([zaidan](https://github.com/zaidan))
+
+## [0.4.0](https://github.com/zaidan/optee_agent/tree/0.4.0) (2018-04-16)
+
+[Full Changelog](https://github.com/zaidan/optee_agent/compare/0.3.0...0.4.0)
+
+**Implemented enhancements:**
+
+- Add OPTEE SMC message type [\#19](https://github.com/zaidan/optee_agent/pull/19) ([zaidan](https://github.com/zaidan))
+- Add flag SYSCASE\_SMC [\#18](https://github.com/zaidan/optee_agent/pull/18) ([zaidan](https://github.com/zaidan))
+
 ## [0.3.0](https://github.com/zaidan/optee_agent/tree/0.3.0) (2018-04-01)
 
 [Full Changelog](https://github.com/zaidan/optee_agent/compare/0.2.0...0.3.0)
