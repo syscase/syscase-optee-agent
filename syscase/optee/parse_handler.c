@@ -8,6 +8,8 @@
 #include "syscase/argument/vector_64.h"
 #include "syscase/argument/reference.h"
 
+#include "syscase/optee/argument/time.h"
+
 parse_handler_t get_parse_handler(unsigned char type)
 {
   switch(type) {
@@ -18,6 +20,7 @@ parse_handler_t get_parse_handler(unsigned char type)
     case ARG_VECTOR_64: return parse_argument_vector_64;
     case ARG_REFERENCE: return parse_argument_reference;
     case ARG_VECTOR_32: return parse_argument_vector_32;
+    case ARG_OPTEE_TIME: return parse_argument_optee_time;
     default: return (parse_handler_t) -1;
   }
 }

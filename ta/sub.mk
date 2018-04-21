@@ -20,7 +20,9 @@ srcs-y += ../syscase/argument/length.c
 srcs-y += ../syscase/argument/vector_32.c
 srcs-y += ../syscase/argument/vector_64.c
 srcs-y += ../syscase/argument/reference.c
+srcs-y += ../syscase/optee/argument/time.c
 srcs-y += ../syscase/utils.c
 # To remove a certain compiler flag, add a line like this
 #cflags-template_ta.c-y += -Wno-strict-prototypes
 cflags-printf.c-y += -Wno-error=suggest-attribute=format
+cflags-../syscase/optee/argument/time.c-y += -Wno-error=unused-parameter
