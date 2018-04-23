@@ -9,6 +9,9 @@
 #include "syscase/argument/reference.h"
 
 #include "syscase/optee/argument/time.h"
+#include "syscase/optee/argument/utee_params.h"
+#include "syscase/optee/argument/uuid.h"
+#include "syscase/optee/argument/utee_attribute.h"
 
 parse_handler_t get_parse_handler(unsigned char type)
 {
@@ -21,6 +24,9 @@ parse_handler_t get_parse_handler(unsigned char type)
     case ARG_REFERENCE: return parse_argument_reference;
     case ARG_VECTOR_32: return parse_argument_vector_32;
     case ARG_OPTEE_TIME: return parse_argument_optee_time;
+    case ARG_OPTEE_UTEE_PARAMS: return parse_argument_optee_utee_params;
+    case ARG_OPTEE_UUID: return parse_argument_optee_uuid;
+    case ARG_OPTEE_UTEE_ATTRIBUTE: return parse_argument_optee_utee_attribute;
     default: return (parse_handler_t) -1;
   }
 }
