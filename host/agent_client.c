@@ -8,6 +8,8 @@
 
 #include "syscase/afl_call.h"
 #include "syscase/test_run.h"
+#include "syscase/test_case.h"
+#include "syscase/buffer.h"
 #include "syscase/utils.h"
 #include "syscase/smcchar/smc_call.h"
 #include "utils.h"
@@ -15,7 +17,7 @@
 
 int syscase_verbose = 1;
 
-int fuzzing_mode = MODE_OPTEE;
+int fuzzing_mode = 0;
 int trace = 1;
 
 TEEC_Result invoke_call(TEEC_Session *sess, char *input, sc_u_long input_size)
@@ -69,13 +71,13 @@ void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
         trace = 0;
         break;
       case 'O':
-        fuzzing_mode = MODE_OPTEE;
+        fuzzing_mode |= MODE_OPTEE;
         break;
       case 'L':
-        fuzzing_mode = MODE_LINUX;
+        fuzzing_mode |= MODE_LINUX;
         break;
       case 'S':
-        fuzzing_mode = MODE_SMC;
+        fuzzing_mode |= MODE_SMC;
         break;
       case '?':
       default:
@@ -90,19 +92,41 @@ static void guard_handler(void)
   done_work(0, trace);
 }
 
-/*
- * Run test case
- */
-void run_test(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
+static int is_power_of_two(int x)
 {
-  sc_u_long input_size;
-  char *input;
+  return x > 0 && (x & (x-1)) == 0;
+}
 
-  process_options(argc, argv, &input, &input_size);
+int is_combined(int mode)
+{
+  return !is_power_of_two(mode);
+}
 
-  fork_guard(guard_handler);
+void run_combined(TEEC_Context *ctx, TEEC_Session *sess, char *input, sc_u_long input_size, int fuzzing_mode) {
+  struct buffer buffer;
+  struct buffer cases[NCASES];
+  int parse_result, ncases, i;
+  unsigned char mode;
 
-  switch(fuzzing_mode) {
+  printf("Create combined input buffer\n");
+  buffer_from(&buffer, input, input_size);
+  printf("Parse combined input\n");
+  parse_result = split_test_cases(&buffer, NCASES, cases, &ncases);
+  printf("read %ld bytes, parse result %d number of cases %d\n", input_size, parse_result, (int)ncases);
+
+  for(i = 0; i < ncases; i++) {
+    if(get_u_int8_t(&cases[i], &mode) == -1) {
+      printf("Can not parse fuzzing mode!\n");
+      return;
+    }
+    printf("Run case with fuzzing mode %d and input size %lu\n", (int) mode, buffer_size(&cases[i]));
+    run_case(ctx, sess, (char *) buffer_pos(&cases[i]), buffer_size(&cases[i]), fuzzing_mode,(int) mode);
+  }
+}
+
+void run_case(TEEC_Context *ctx, TEEC_Session *sess, char *input, sc_u_long input_size, int fuzzing_mode, int mode)
+{
+  switch(mode & fuzzing_mode) {
     case MODE_LINUX:
       trace_linux_kernel(input, input_size);
       break;
@@ -117,8 +141,34 @@ void run_test(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
       smc_call(input, input_size, trace);
       break;
     default:
-      usage(argv[0]);
+      printf("Unknown fuzzing mode %d\n", mode);
   }
+}
+
+/*
+ * Run test case
+ */
+void run_test(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
+{
+  sc_u_long input_size;
+  char *input;
+
+  process_options(argc, argv, &input, &input_size);
+
+  fork_guard(guard_handler);
+
+  if(fuzzing_mode == 0) {
+    usage(argv[0]);
+  }
+
+  if(is_combined(fuzzing_mode)) {
+    // Execute combined test case format
+    run_combined(ctx, sess, input, input_size, fuzzing_mode);
+    return;
+  }
+
+  // Execute single test case format
+  run_case(ctx, sess, input, input_size, fuzzing_mode, fuzzing_mode);
 }
 
 /*
