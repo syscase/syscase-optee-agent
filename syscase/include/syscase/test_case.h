@@ -5,6 +5,7 @@
 
 #define BUFFER_DELIMITER "\xa5\xc9"
 #define CALL_DELIMITER "\xb7\xe3"
+#define CASE_DELIMITER "\xe3\xb7"
 
 typedef struct system_call test_case_t;
 
