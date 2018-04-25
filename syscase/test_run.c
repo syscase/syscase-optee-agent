@@ -7,12 +7,15 @@
 /*
  * Run test case
  */
-sc_u_long trace_test_case(char *input, sc_u_long input_size, sc_u_int64_t start_parse, sc_u_int64_t end_parse, sc_u_int64_t start, sc_u_int64_t end, int trace)
+sc_u_long trace_test_case(char *input, sc_u_long input_size, sc_u_int64_t start_parse, sc_u_int64_t end_parse, sc_u_int64_t start, sc_u_int64_t end, int flags)
 {
   struct buffer buffer;
   int parse_result, ncalls;
   test_case_t test_case[3];
   sc_u_long result;
+  int trace;
+
+  trace = flags & FLAG_TRACE;
 
   start_forkserver(0, trace);
   if(trace) {

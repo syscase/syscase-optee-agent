@@ -18,7 +18,7 @@
 int syscase_verbose = 1;
 
 int fuzzing_mode = 0;
-int trace = 1;
+int syscase_flags = FLAG_TRACE;
 
 TEEC_Result invoke_call(TEEC_Session *sess, char *input, sc_u_long input_size)
 {
@@ -32,8 +32,8 @@ TEEC_Result invoke_call(TEEC_Session *sess, char *input, sc_u_long input_size)
   op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT, TEEC_MEMREF_TEMP_INPUT,
                     TEEC_NONE, TEEC_NONE);
 
-  op.params[0].value.a = trace;
-  if(!trace) {
+  op.params[0].value.a = syscase_flags;
+  if(!(syscase_flags & FLAG_TRACE) || syscase_flags & FLAG_COMBINED) {
 	  op.params[1].tmpref.buffer = input;
 	  op.params[1].tmpref.size = input_size;
   }
@@ -68,7 +68,7 @@ void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
       case 'i':
         read_file(optarg, input, input_size);
       case 't':
-        trace = 0;
+        syscase_flags &= ~FLAG_TRACE;
         break;
       case 'O':
         fuzzing_mode |= MODE_OPTEE;
@@ -89,7 +89,7 @@ void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
 
 static void guard_handler(void)
 {
-  done_work(0, trace);
+  done_work(0, syscase_flags);
 }
 
 static int is_power_of_two(int x)
@@ -138,7 +138,7 @@ void run_case(TEEC_Context *ctx, TEEC_Session *sess, char *input, sc_u_long inpu
     case MODE_SMC:
       /* Trace OPTEE SMC call */
       printf("Trace OPTEE Secure Monitor Call: Forward input to SMC Kernel Module\n");
-      smc_call(input, input_size, trace);
+      smc_call(input, input_size, syscase_flags);
       break;
     default:
       printf("Unknown fuzzing mode %d\n", mode);
@@ -162,6 +162,7 @@ void run_test(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
   }
 
   if(is_combined(fuzzing_mode)) {
+    syscase_flags |= FLAG_COMBINED;
     // Execute combined test case format
     run_combined(ctx, sess, input, input_size, fuzzing_mode);
     return;
@@ -186,6 +187,6 @@ void trace_linux_kernel(char *input, sc_u_long input_size)
       (sc_u_long)__libc_start_main,
       0xffff000000000000L,
       0xffffffffffffffffL,
-      trace
+      syscase_flags
   );
 }
