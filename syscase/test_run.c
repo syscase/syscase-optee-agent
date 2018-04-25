@@ -4,6 +4,17 @@
 #include "syscase/afl_call.h"
 #include "syscase/utils.h"
 
+void get_test_case(char **input, sc_u_long *input_size, int trace) {
+    start_forkserver(0, trace);
+    if(trace) {
+      *input = get_work(input_size);
+    }
+    sc_printf("got work: %lu - %.*s\n", *input_size, (int) *input_size, *input);
+#ifdef SYSCASE_DEBUG
+    dump_hex((unsigned char*) *input, *input_size);
+#endif
+}
+
 /*
  * Run test case
  */
@@ -17,11 +28,12 @@ sc_u_long trace_test_case(char *input, sc_u_long input_size, sc_u_int64_t start_
 
   trace = flags & FLAG_TRACE;
 
-  start_forkserver(0, trace);
-  if(trace) {
-    input = get_work(&input_size);
+  if(!(flags & FLAG_COMBINED)) {
+    get_test_case(&input, &input_size, trace);
+  } else {
+    sc_printf("got case: %lu - %.*x\n", input_size, (int) input_size, (unsigned char*) input);
   }
-  sc_printf("got work: %lu - %.*s\n", input_size, (int) input_size, input);
+
 #ifdef SYSCASE_DEBUG
   dump_hex((unsigned char*) input, input_size);
 #endif
@@ -42,7 +54,10 @@ sc_u_long trace_test_case(char *input, sc_u_long input_size, sc_u_int64_t start_
 
   result = execute_test_case(test_case, ncalls);
   sc_printf("system call result: %ld\n", result);
-  done_work(0, trace);
+
+  if(!(flags & FLAG_COMBINED)) {
+    done_work(0, trace);
+  }
 
   return result;
 }
