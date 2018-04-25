@@ -163,12 +163,17 @@ void run_test(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
 
   if(is_combined(fuzzing_mode)) {
     syscase_flags |= FLAG_COMBINED;
-    // Execute combined test case format
+    // Get test case in combined test case format
+    // start_forkserver and get_work is executed by host applicaton
+    get_test_case(&input, &input_size, syscase_flags & FLAG_TRACE);
+    // Execute combined test case format by responsible agent
     run_combined(ctx, sess, input, input_size, fuzzing_mode);
+    done_work(0, syscase_flags & FLAG_TRACE);
     return;
   }
 
   // Execute single test case format
+  // start_forkserver and get_work is executed by responsible agent
   run_case(ctx, sess, input, input_size, fuzzing_mode, fuzzing_mode);
 }
 
