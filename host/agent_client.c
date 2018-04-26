@@ -89,6 +89,7 @@ void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
 
 static void guard_handler(void)
 {
+  printf("guard: done work!\n");
   done_work(0, syscase_flags);
 }
 
