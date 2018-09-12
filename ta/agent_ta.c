@@ -78,7 +78,7 @@ static TEE_Result call(uint32_t param_types,
 {
   char* input;
   sc_u_long input_size;
-  int trace;
+  int flags;
   sc_u_long result;
 
 	uint32_t exp_param_types = TEE_PARAM_TYPES(TEE_PARAM_TYPE_VALUE_INOUT,
@@ -91,8 +91,8 @@ static TEE_Result call(uint32_t param_types,
 	if (param_types != exp_param_types)
 		return TEE_ERROR_BAD_PARAMETERS;
 
-  trace = params[0].value.a;
-  if(!trace) {
+  flags = params[0].value.a;
+  if(!(flags & FLAG_TRACE) || flags & FLAG_COMBINED) {
     input = params[1].memref.buffer;
     input_size = params[1].memref.size;
 	  IMSG("TA AGENT: With input size: %lu", input_size);
@@ -101,7 +101,7 @@ static TEE_Result call(uint32_t param_types,
     input_size = 0;
   }
 
-	IMSG("TA AGENT: With trace mode: %u", trace);
+	IMSG("TA AGENT: With flags: %x", flags);
 	IMSG("TA AGENT: Execute test case:");
 
   result = trace_test_case(
@@ -113,7 +113,7 @@ static TEE_Result call(uint32_t param_types,
       // OPTEE core
       0xe100000,
       0xe143fff,
-      trace
+      flags
   );
 
 	params[0].value.a = result;

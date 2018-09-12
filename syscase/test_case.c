@@ -91,6 +91,19 @@ int parse_test_case(struct buffer *buffer, int max_calls, int max_args, test_cas
   return 0;
 }
 
+int split_test_cases(struct buffer *buffer, int max_cases, struct buffer *cases, int *ncases)
+{
+  sc_size_t nbuffers;
+
+  sc_printf("split cases\n");
+  if(split_buffer(buffer, CASE_DELIMITER, sizeof CASE_DELIMITER - 1, max_cases, cases, &nbuffers) == -1)
+    return -1;
+
+  *ncases = nbuffers;
+
+  return 0;
+}
+
 void dump_call(struct system_call *value, int max_args)
 {
 #if !defined(SYSCASE_SMC)

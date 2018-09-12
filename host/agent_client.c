@@ -8,6 +8,8 @@
 
 #include "syscase/afl_call.h"
 #include "syscase/test_run.h"
+#include "syscase/test_case.h"
+#include "syscase/buffer.h"
 #include "syscase/utils.h"
 #include "syscase/smcchar/smc_call.h"
 #include "utils.h"
@@ -15,8 +17,8 @@
 
 int syscase_verbose = 1;
 
-int fuzzing_mode = MODE_OPTEE;
-int trace = 1;
+int fuzzing_mode = 0;
+int syscase_flags = FLAG_TRACE;
 
 TEEC_Result invoke_call(TEEC_Session *sess, char *input, sc_u_long input_size)
 {
@@ -30,8 +32,8 @@ TEEC_Result invoke_call(TEEC_Session *sess, char *input, sc_u_long input_size)
   op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT, TEEC_MEMREF_TEMP_INPUT,
                     TEEC_NONE, TEEC_NONE);
 
-  op.params[0].value.a = trace;
-  if(!trace) {
+  op.params[0].value.a = syscase_flags;
+  if(!(syscase_flags & FLAG_TRACE) || syscase_flags & FLAG_COMBINED) {
 	  op.params[1].tmpref.buffer = input;
 	  op.params[1].tmpref.size = input_size;
   }
@@ -66,16 +68,16 @@ void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
       case 'i':
         read_file(optarg, input, input_size);
       case 't':
-        trace = 0;
+        syscase_flags &= ~FLAG_TRACE;
         break;
       case 'O':
-        fuzzing_mode = MODE_OPTEE;
+        fuzzing_mode |= MODE_OPTEE;
         break;
       case 'L':
-        fuzzing_mode = MODE_LINUX;
+        fuzzing_mode |= MODE_LINUX;
         break;
       case 'S':
-        fuzzing_mode = MODE_SMC;
+        fuzzing_mode |= MODE_SMC;
         break;
       case '?':
       default:
@@ -87,7 +89,61 @@ void process_options(int argc, char **argv, char **input, sc_u_long *input_size)
 
 static void guard_handler(void)
 {
-  done_work(0, trace);
+  printf("guard: done work!\n");
+  done_work(0, syscase_flags);
+}
+
+static int is_power_of_two(int x)
+{
+  return x > 0 && (x & (x-1)) == 0;
+}
+
+int is_combined(int mode)
+{
+  return !is_power_of_two(mode);
+}
+
+void run_combined(TEEC_Context *ctx, TEEC_Session *sess, char *input, sc_u_long input_size, int fuzzing_mode) {
+  struct buffer buffer;
+  struct buffer cases[NCASES];
+  int parse_result, ncases, i;
+  unsigned char mode;
+
+  printf("Create combined input buffer\n");
+  buffer_from(&buffer, input, input_size);
+  printf("Parse combined input\n");
+  parse_result = split_test_cases(&buffer, NCASES, cases, &ncases);
+  printf("read %ld bytes, parse result %d number of cases %d\n", input_size, parse_result, (int)ncases);
+
+  for(i = 0; i < ncases; i++) {
+    if(get_u_int8_t(&cases[i], &mode) == -1) {
+      printf("Can not parse fuzzing mode!\n");
+      return;
+    }
+    printf("Run case with fuzzing mode %d and input size %lu\n", (int) mode, buffer_size(&cases[i]));
+    run_case(ctx, sess, (char *) buffer_pos(&cases[i]), buffer_size(&cases[i]), fuzzing_mode,(int) mode);
+  }
+}
+
+void run_case(TEEC_Context *ctx, TEEC_Session *sess, char *input, sc_u_long input_size, int fuzzing_mode, int mode)
+{
+  switch(mode & fuzzing_mode) {
+    case MODE_LINUX:
+      trace_linux_kernel(input, input_size);
+      break;
+    case MODE_OPTEE:
+      /* Trace OPTEE Core */
+      printf("Trace OPTEE System Call: Forward input to TA\n");
+      invoke_call(sess, input, input_size);
+      break;
+    case MODE_SMC:
+      /* Trace OPTEE SMC call */
+      printf("Trace OPTEE Secure Monitor Call: Forward input to SMC Kernel Module\n");
+      smc_call(input, input_size, syscase_flags);
+      break;
+    default:
+      printf("Unknown fuzzing mode %d\n", mode);
+  }
 }
 
 /*
@@ -102,23 +158,24 @@ void run_test(TEEC_Context *ctx, TEEC_Session *sess, int argc, char **argv)
 
   fork_guard(guard_handler);
 
-  switch(fuzzing_mode) {
-    case MODE_LINUX:
-      trace_linux_kernel(input, input_size);
-      break;
-    case MODE_OPTEE:
-      /* Trace OPTEE Core */
-      printf("Trace OPTEE System Call: Forward input to TA\n");
-      invoke_call(sess, input, input_size);
-      break;
-    case MODE_SMC:
-      /* Trace OPTEE SMC call */
-      printf("Trace OPTEE Secure Monitor Call: Forward input to SMC Kernel Module\n");
-      smc_call(input, input_size, trace);
-      break;
-    default:
-      usage(argv[0]);
+  if(fuzzing_mode == 0) {
+    usage(argv[0]);
   }
+
+  if(is_combined(fuzzing_mode)) {
+    syscase_flags |= FLAG_COMBINED;
+    // Get test case in combined test case format
+    // start_forkserver and get_work is executed by host applicaton
+    get_test_case(&input, &input_size, syscase_flags & FLAG_TRACE);
+    // Execute combined test case format by responsible agent
+    run_combined(ctx, sess, input, input_size, fuzzing_mode);
+    done_work(0, syscase_flags & FLAG_TRACE);
+    return;
+  }
+
+  // Execute single test case format
+  // start_forkserver and get_work is executed by responsible agent
+  run_case(ctx, sess, input, input_size, fuzzing_mode, fuzzing_mode);
 }
 
 /*
@@ -136,6 +193,6 @@ void trace_linux_kernel(char *input, sc_u_long input_size)
       (sc_u_long)__libc_start_main,
       0xffff000000000000L,
       0xffffffffffffffffL,
-      trace
+      syscase_flags
   );
 }
