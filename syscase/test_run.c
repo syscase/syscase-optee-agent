@@ -32,6 +32,7 @@ sc_u_long trace_test_case(char *input, sc_u_long input_size, sc_u_int64_t start_
     get_test_case(&input, &input_size, trace);
   } else {
     sc_printf("got case: %lu - %.*x\n", input_size, (int) input_size, (unsigned char*) input);
+    dump_hex((unsigned char*) input, input_size);
   }
 
 #ifdef SYSCASE_DEBUG
@@ -42,9 +43,14 @@ sc_u_long trace_test_case(char *input, sc_u_long input_size, sc_u_int64_t start_
   start_work(start_parse, end_parse, trace);
 
   sc_printf("Create buffer\n");
+  dump_hex((unsigned char*) input, input_size);
   buffer_from(&buffer, input, input_size);
   sc_printf("Parse input\n");
   parse_result = parse_test_case(&buffer, 3, syscase_max_args, test_case, &ncalls);
+
+  if(parse_result == -1) {
+    return -1;
+  }
 
   sc_printf("read %ld bytes, parse result %d number of calls %d\n", input_size, parse_result, (int)ncalls);
   dump_test_case(test_case, ncalls, syscase_max_args);

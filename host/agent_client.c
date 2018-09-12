@@ -113,6 +113,11 @@ void run_combined(TEEC_Context *ctx, TEEC_Session *sess, char *input, sc_u_long 
   buffer_from(&buffer, input, input_size);
   printf("Parse combined input\n");
   parse_result = split_test_cases(&buffer, NCASES, cases, &ncases);
+
+  if(parse_result == -1) {
+    return;
+  }
+
   printf("read %ld bytes, parse result %d number of cases %d\n", input_size, parse_result, (int)ncases);
 
   for(i = 0; i < ncases; i++) {
