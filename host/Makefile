@@ -8,6 +8,7 @@ READELF = $(CROSS_COMPILE)readelf
 
 LDOBJS += client.o
 LDOBJS += utils.o
+LDOBJS += ../syscase/vendor/jsmn/jsmn.o
 LDOBJS += ../syscase/afl_call.o
 LDOBJS += ../syscase/test_run.o
 LDOBJS += ../syscase/buffer.o
@@ -35,7 +36,7 @@ LDOBJS += agent_client.o
 OBJS = main.o
 OBJS += $(LDOBJS)
 
-CFLAGS += -Wall -I../syscase/include -I../smcchar/include -I../ta/include -I$(TEEC_EXPORT)/include -I./include
+CFLAGS += -Wall -I../syscase/vendor/jsmn -I../syscase/include -I../smcchar/include -I../ta/include -I$(TEEC_EXPORT)/include -I./include
 #Add/link other required libraries here
 LDADD += $(LDOBJS) -lteec -L$(TEEC_EXPORT)/lib
 
