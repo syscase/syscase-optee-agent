@@ -1,11 +1,13 @@
 global-incdirs-y += include
 global-incdirs-y += ../host/include
+global-incdirs-y += ../syscase/vendor/jsmn
 global-incdirs-y += ../syscase/include
 srcs-y += agent_ta.c
 #srcs-y += vendor/memchr.c
 #srcs-y += vendor/memcmp.c
 srcs-y += vendor/memmem.c
 srcs-y += printf.c
+srcs-y += ../syscase/vendor/jsmn/jsmn.c
 srcs-y += ../syscase/afl_call.c
 srcs-y += ../syscase/test_run.c
 srcs-y += ../syscase/buffer.c
@@ -32,3 +34,4 @@ cflags-../syscase/optee/argument/time.c-y += -Wno-error=unused-parameter
 cflags-../syscase/optee/argument/utee_params.c-y += -Wno-error=unused-parameter
 cflags-../syscase/optee/argument/uuid.c-y += -Wno-error=unused-parameter
 cflags-../syscase/optee/argument/utee_attribute.c-y += -Wno-error=unused-parameter
+cflags-../syscase/vendor/jsmn/jsmn.c-y += -Wno-error=switch-default
