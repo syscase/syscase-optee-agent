@@ -8,7 +8,7 @@
 #define SIZE_STACK_SIZE 256
 
 struct parse_state {
-  struct system_call *calls;
+  struct system_call* calls;
   int ncalls;
   struct buffer buffers[NBUFFERS];
   sc_u_int64_t size_stack[SIZE_STACK_SIZE];
@@ -17,8 +17,7 @@ struct parse_state {
   sc_size_t stack_pos;
 };
 
-int push_size(struct parse_state *state, sc_u_int64_t size);
-int pop_size(struct parse_state *state, sc_u_int64_t *size);
+int push_size(struct parse_state* state, sc_u_int64_t size);
+int pop_size(struct parse_state* state, sc_u_int64_t* size);
 
 #endif /*SYSCASE_PARSE_STATE_H*/
-

@@ -3,6 +3,9 @@
 
 #include "syscase/optee/smc/argument/msg_type.h"
 
+#include "syscase/parse_state.h"
+#include "syscase/types.h"
+
 struct sc_optee_msg_param_tmem {
   sc_u_int64_t buf_ptr;
   sc_u_int64_t size;
@@ -43,7 +46,8 @@ struct optee_msg_arg {
   struct sc_optee_msg_param params[NPARAMS];
 };
 
-int parse_argument_optee_msg(struct buffer *buffer, struct parse_state *state, sc_u_int64_t *value);
+int parse_argument_optee_msg(struct buffer* buffer,
+                             struct parse_state* state,
+                             sc_u_int64_t* value);
 
 #endif /*SYSCASE_OPTEE_SMC_ARGUMENT_MSG_H*/
-

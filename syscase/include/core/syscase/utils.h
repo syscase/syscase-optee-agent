@@ -3,7 +3,6 @@
 
 #include "syscase/types.h"
 
-void dump_hex(unsigned char *s, sc_size_t size);
+void dump_hex(unsigned char* s, sc_size_t size);
 
 #endif /*SYSCASE_UTILS_H*/
-
