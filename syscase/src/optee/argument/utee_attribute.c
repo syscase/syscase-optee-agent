@@ -4,6 +4,8 @@
 #include "syscase/optee/argument/utee_attribute.h"
 #include "syscase/parse_state.h"
 
+#include "syscase/cli/globals.h"
+
 int parse_argument_optee_utee_attribute(struct buffer* buffer,
                                         struct parse_state* state,
                                         sc_u_int64_t* value) {

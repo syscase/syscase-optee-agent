@@ -1,6 +1,8 @@
 #include "syscase/argument/number.h"
 #include "syscase/common.h"
 
+#include "syscase/cli/globals.h"
+
 int parse_argument_number(struct buffer* buffer,
                           struct parse_state* state,
                           sc_u_int64_t* value) {

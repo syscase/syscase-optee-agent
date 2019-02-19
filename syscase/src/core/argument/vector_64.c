@@ -3,6 +3,8 @@
 #include "syscase/parse_state.h"
 #include "syscase/test_case.h"
 
+#include "syscase/cli/globals.h"
+
 int parse_argument_vector_64(struct buffer* buffer,
                              struct parse_state* state,
                              sc_u_int64_t* value) {

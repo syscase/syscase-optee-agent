@@ -5,6 +5,8 @@
 #include "syscase/linux/argument/pid.h"
 #include "syscase/parse_state.h"
 
+#include "syscase/cli/globals.h"
+
 int fork_test_child(sc_u_int64_t* result_pid) {
   pid_t pid;
   int i;

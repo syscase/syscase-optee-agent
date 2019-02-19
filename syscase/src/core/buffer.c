@@ -2,6 +2,8 @@
 #include "syscase/common.h"
 #include "syscase/utils.h"
 
+#include "syscase/cli/globals.h"
+
 void buffer_from(struct buffer* buffer, void* input, sc_size_t size) {
   buffer->pos = (sc_u_int8_t*)input;
   buffer->end = buffer->pos + size;

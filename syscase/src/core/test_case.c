@@ -2,6 +2,8 @@
 #include "syscase/common.h"
 #include "syscase/parse_handler.h"
 
+#include "syscase/cli/globals.h"
+
 int parse_argument(struct buffer* buffer,
                    struct parse_state* state,
                    int index,

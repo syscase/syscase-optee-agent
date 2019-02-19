@@ -6,6 +6,8 @@
 #include "syscase/optee/smc/argument/msg.h"
 #include "syscase/parse_state.h"
 
+#include "syscase/cli/globals.h"
+
 static int shm_store(struct optee_msg_arg* msg, sc_u_int64_t* paddr) {
   size_t msg_size;
   unsigned int order;
