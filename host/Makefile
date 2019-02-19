@@ -7,7 +7,6 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 READELF = $(CROSS_COMPILE)readelf
 
 LDOBJS += client.o
-LDOBJS += utils.o
 LDOBJS += ../syscase/vendor/jsmn/jsmn.o
 LDOBJS += ../syscase/src/core/afl_call.o
 LDOBJS += ../syscase/src/core/test_run.o
@@ -29,8 +28,10 @@ LDOBJS += ../syscase/src/linux/argument/fd.o
 LDOBJS += ../syscase/src/linux/argument/filename.o
 LDOBJS += ../syscase/src/linux/argument/pid.o
 LDOBJS += ../syscase/src/core/utils.o
+LDOBJS += ../syscase/src/core/cli/usage.o
+LDOBJS += ../syscase/src/core/cli/options.o
+LDOBJS += ../syscase/src/core/cli/run.o
 LDOBJS += ../smcchar/smc_call.o
-LDOBJS += guard.o
 LDOBJS += agent_client.o
 
 OBJS = main.o

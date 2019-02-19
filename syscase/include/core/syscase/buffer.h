@@ -3,8 +3,6 @@
 
 #include "syscase/types.h"
 
-extern int syscase_verbose;
-
 struct buffer {
   unsigned char* pos;
   unsigned char* end;
