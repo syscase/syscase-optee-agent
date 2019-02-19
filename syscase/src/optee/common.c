@@ -68,3 +68,19 @@ unsigned long sc_syscall(struct system_call* sc) {
         [a5] "r"(sc->args[5]), [a6] "r"(sc->args[6]), [a7] "r"(sc->args[7]));
   return ret;
 }
+
+void sc_read_file(char* filename, char** input, sc_size_t* input_size) {
+  // Not supported
+}
+
+void sc_fork_guard(void (*handler)(void)) {
+  // Not supported
+}
+
+void sc_guard(int pid, void (*handler)(void)) {
+  // Not supported
+}
+
+void sc_exit(int status) {
+  // Not supported
+}

@@ -35,4 +35,5 @@ cflags-../syscase/src/optee/argument/time.c-y += -Wno-error=unused-parameter
 cflags-../syscase/src/optee/argument/utee_params.c-y += -Wno-error=unused-parameter
 cflags-../syscase/src/optee/argument/uuid.c-y += -Wno-error=unused-parameter
 cflags-../syscase/src/optee/argument/utee_attribute.c-y += -Wno-error=unused-parameter
+cflags-../syscase/src/optee/common.c-y += -Wno-error=unused-parameter
 cflags-../syscase/vendor/jsmn/jsmn.c-y += -Wno-error=switch-default

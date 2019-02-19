@@ -19,4 +19,11 @@ unsigned long sc_syscall(struct system_call* value);
 int sc_printf(const char* format, ...);
 int sc_printf1(const char* format);
 
+void sc_read_file(char* filename, char** input, sc_size_t* input_size);
+
+void sc_fork_guard(void (*handler)(void));
+void sc_guard(int pid, void (*handler)(void));
+
+void sc_exit(int status);
+
 #endif /*SYSCASE_COMMON_H*/
