@@ -65,6 +65,21 @@ void trace_smc_handler(char* input, sc_u_long input_size, int flags) {
   smc_call(input, input_size, syscase_flags);
 }
 
+void trace_smc_driver_handler(char* input, sc_u_long input_size, int flags) {
+  /* Trace agent */
+  extern void _start(), __libc_start_main();
+
+  trace_test_case(
+      input,
+      input_size,
+      (sc_u_long)_start,
+      (sc_u_long)__libc_start_main,
+      0xe100000,
+      0xe143fff,
+      syscase_flags | FLAG_SMC_DRIVER
+  );
+}
+
 void trace_linux_handler(char *input, sc_u_long input_size)
 {
   /* Trace agent */
@@ -80,3 +95,4 @@ void trace_linux_handler(char *input, sc_u_long input_size)
       syscase_flags
   );
 }
+

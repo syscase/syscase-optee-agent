@@ -18,6 +18,14 @@ void* sc_memset(void* s, int c, sc_size_t n) {
   return memset(s, c, n);
 }
 
+void* sc_memcpy(void* dest, const void* src, sc_size_t n) {
+  return memcpy(dest, src, n);
+}
+
+int sc_strncmp(const char* s1, const char* s2, sc_size_t n) {
+  return strncmp(s1, s2, n);
+}
+
 void sc_free(void* ptr) {
   kfree(ptr);
 }
@@ -27,6 +35,10 @@ void* sc_memmem(const void* haystack,
                 const void* needle,
                 sc_size_t needlelen) {
   return memmem(haystack, haystacklen, needle, needlelen);
+}
+
+unsigned long int sc_strtoul(const char *nptr, char **endptr, int base) {
+  return strtoul(nptr, endptr, base);
 }
 
 int sc_printf(const char* format, ...) {

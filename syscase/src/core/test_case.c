@@ -1,117 +1,64 @@
 #include "syscase/test_case.h"
 #include "syscase/common.h"
 #include "syscase/parse_handler.h"
+#include "syscase/json.h"
 
 #include "syscase/cli/globals.h"
+#include "syscase/argument/number.h"
 
-int parse_argument(struct buffer* buffer,
-                   struct parse_state* state,
-                   int index,
-                   sc_u_int64_t* value) {
-  unsigned char type;
+int parse_argument(struct json_call_t* json_calls,
+                int njson_calls,
+                struct buffer* data,
+                struct system_call* calls,
+                int call_index,
+                int arg_index) {
+  int type;
   parse_handler_t handler;
 
-  if (get_u_int8_t(buffer, &type) == -1 ||
-      (handler = get_parse_handler(type)) == (parse_handler_t)-1)
+  type = json_calls[call_index].args[arg_index].type;
+
+  if ((handler = get_parse_handler(type)) == (parse_handler_t)-1)
     return -1;
 
-  if (index >= 0)
-    state->calls->types[index] = type;
+  calls[call_index].types[arg_index] = type;
 
-  return handler(buffer, state, value);
+  return handler(json_calls, njson_calls, data, calls, call_index, arg_index);
 }
 
-int parse_calls(struct system_call* calls,
-                int max_args,
-                int ncalls,
-                struct buffer* buffer,
-                struct system_call* value) {
-  struct parse_state* state;
-  sc_size_t state_size;
+int parse_calls(struct json_call_t* json_calls,
+                int njson_calls,
+                struct buffer* data,
+                struct system_call* calls) {
+  for(int i = 0; i < njson_calls; i++) {
+    // Set defaults
+    for(int j = 0; j < NARGS; j++) {
+      calls[i].args[j] = 0;
+      calls[i].types[j] = ARG_TYPE_ID_NUMBER;
+    }
 
-  state_size = sizeof(struct parse_state);
-  state = sc_malloc(state_size);
-  sc_memset(state, 0, state_size);
+    for(int j = 0; j < json_calls[i].size; j++) {
 
-  sc_printf("split buffers\n");
-  if (split_buffer(buffer, BUFFER_DELIMITER, sizeof BUFFER_DELIMITER - 1,
-                   NBUFFERS, state->buffers, &state->nbuffers) == -1 ||
-      state->nbuffers < 1)
-    return -1;
-
-  buffer = &state->buffers[0];
-  state->buffer_pos = 1;
-  state->stack_pos = 0;
-  state->calls = calls;
-  state->ncalls = ncalls;
-
-#if !defined(SYSCASE_SMC)
-  if (get_u_int16_t(buffer, &value->no) == -1) {
-    sc_printf("Can not parse system call number!\n");
-#else
-  if (parse_argument(buffer, state, -1, &value->no) == -1) {
-    sc_printf("Can not parse SMC call identifier!\n");
+#ifdef SYSCASE_DEBUG
+      sc_printf("Parse argument %d\n", j);
 #endif
-    sc_free(state);
-    return -1;
-  }
-
-  if (syscase_verbose)
-    sc_printf("call %d\n", value->no);
-
-  for (int i = 0; i < max_args; i++) {
-    if (syscase_verbose)
-      sc_printf("arg %d: ", i);
-    if (parse_argument(buffer, state, i, &value->args[i]) == -1) {
-      sc_printf("Can not parse argument %d!\n", i);
-      sc_free(state);
-      return -1;
+      parse_argument(json_calls, njson_calls, data, calls, i, j);
     }
   }
 
-  sc_free(state);
   return 0;
 }
 
-int parse_test_case(struct buffer* buffer,
-                    int max_calls,
-                    int max_args,
-                    test_case_t* test_case,
-                    int* ncalls) {
-  struct buffer buffers[10];
-  sc_size_t nbuffers;
-
-  if (max_calls > 10)
-    max_calls = 10;
-
-  if (max_args > NARGS)
-    max_args = NARGS;
-
-  sc_printf("split calls\n");
-  if (split_buffer(buffer, CALL_DELIMITER, sizeof CALL_DELIMITER - 1, max_calls,
-                   buffers, &nbuffers) == -1)
-    return -1;
-
-  sc_printf("parse calls\n");
-  for (sc_size_t i = 0; i < nbuffers; i++) {
-    if (parse_calls(test_case, max_args, i, buffers + i, test_case + i) == -1)
-      return -1;
-  }
-
-  *ncalls = nbuffers;
-
-  return 0;
-}
-
-int split_test_cases(struct buffer* buffer,
-                     int max_cases,
-                     struct buffer* cases,
+int split_binary(struct buffer* buffer,
+                     struct buffer* result_buffer,
                      int* ncases) {
   sc_size_t nbuffers;
 
-  sc_printf("split cases\n");
-  if (split_buffer(buffer, CASE_DELIMITER, sizeof CASE_DELIMITER - 1, max_cases,
-                   cases, &nbuffers) == -1)
+#ifdef SYSCASE_DEBUG
+  sc_printf("split binary\n");
+#endif
+
+  if (split_buffer(buffer, BINARY_DELIMITER, sizeof BINARY_DELIMITER - 1, 2,
+                   result_buffer, &nbuffers) == -1)
     return -1;
 
   *ncases = nbuffers;
@@ -119,15 +66,11 @@ int split_test_cases(struct buffer* buffer,
   return 0;
 }
 
-void dump_call(struct system_call* value, int max_args) {
-#if !defined(SYSCASE_SMC)
-  sc_printf("syscall %d (", value->no);
-#else
-  sc_printf("syscall %lx (", value->no);
-#endif
-  for (int i = 0; i < max_args; i++) {
+void dump_call(struct system_call* value) {
+  sc_printf("Call (");
+  for (int i = 0; i < NARGS; i++) {
     sc_printf("%lx", (sc_u_long)value->args[i]);
-    if (i == max_args - 1) {
+    if (i == NARGS - 1) {
       sc_printf(")\n");
       return;
     }
@@ -136,14 +79,9 @@ void dump_call(struct system_call* value, int max_args) {
   }
 }
 
-void dump_test_case(test_case_t* value, int n, int max_args) {
-  int i;
-
-  if (max_args > NARGS)
-    max_args = NARGS;
-
-  for (i = 0; i < n; i++)
-    dump_call(value + i, max_args);
+void dump_test_case(test_case_t* value, int n) {
+  for (int i = 0; i < n; i++)
+    dump_call(value + i);
 }
 
 sc_u_long execute_test_case(test_case_t* value, int n) {

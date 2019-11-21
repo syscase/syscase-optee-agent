@@ -1,13 +1,17 @@
 #ifndef SYSCASE_ARGUMENT_NUMBER_H
 #define SYSCASE_ARGUMENT_NUMBER_H
 
-#include "syscase/parse_state.h"
 #include "syscase/types.h"
+#include "syscase/json.h"
 
-#define ARG_NUMBER 0
+#define ARG_TYPE_ID_NUMBER 0x1
+#define ARG_TYPE_NUMBER "number"
 
-int parse_argument_number(struct buffer* buffer,
-                          struct parse_state* state,
-                          sc_u_int64_t* value);
+int parse_argument_number(struct json_call_t* json_calls,
+                int njson_calls,
+                struct buffer* data,
+                struct system_call* calls,
+                int call_index,
+                int arg_index);
 
 #endif /*SYSCASE_ARGUMENT_NUMBER_H*/

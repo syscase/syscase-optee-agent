@@ -2,5 +2,6 @@
 #define SYSCASE_CLI_NCASES_H
 
 #define NCASES 10
+#define NCALLS 10
 
 #endif /*SYSCASE_CLI_NCASES_H*/

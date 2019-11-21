@@ -1,13 +1,17 @@
 #ifndef SYSCASE_ARGUMENT_BUFFER_H
 #define SYSCASE_ARGUMENT_BUFFER_H
 
-#include "syscase/parse_state.h"
 #include "syscase/types.h"
+#include "syscase/json.h"
 
-#define ARG_BUFFER 2
+#define ARG_TYPE_ID_BUFFER 0x2
+#define ARG_TYPE_BUFFER "buffer"
 
-int parse_argument_buffer(struct buffer* buffer,
-                          struct parse_state* state,
-                          sc_u_int64_t* value);
+int parse_argument_buffer(struct json_call_t* json_calls,
+                int njson_calls,
+                struct buffer* data,
+                struct system_call* calls,
+                int call_index,
+                int arg_index);
 
 #endif /*SYSCASE_ARGUMENT_BUFFER_H*/

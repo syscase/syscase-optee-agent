@@ -22,6 +22,14 @@ void* sc_memset(void* s, int c, sc_size_t n) {
   return memset(s, c, n);
 }
 
+void* sc_memcpy(void* dest, const void* src, sc_size_t n) {
+  return memcpy(dest, src, n);
+}
+
+int sc_strncmp(const char* s1, const char* s2, sc_size_t n) {
+  return strncmp(s1, s2, n);
+}
+
 void sc_free(void* ptr) {
   free(ptr);
 }
@@ -31,6 +39,10 @@ void* sc_memmem(const void* haystack,
                 const void* needle,
                 sc_size_t needlelen) {
   return memmem(haystack, haystacklen, needle, needlelen);
+}
+
+unsigned long int sc_strtoul(const char *nptr, char **endptr, int base) {
+  return strtoul(nptr, endptr, base);
 }
 
 int sc_printf(const char* format, ...) {
@@ -44,8 +56,8 @@ int sc_printf(const char* format, ...) {
 }
 
 unsigned long sc_syscall(struct system_call* value) {
-  return syscall(value->no, value->args[0], value->args[1], value->args[2],
-                 value->args[3], value->args[4], value->args[5]);
+  return syscall(value->args[0], value->args[1], value->args[2], value->args[3],
+                 value->args[4], value->args[5], value->args[6]);
 }
 
 void sc_read_file(char* filename, char** input, sc_size_t* input_size) {

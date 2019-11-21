@@ -8,7 +8,7 @@
 
 int started = 0;
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 122880
 static char* buffer;
 static sc_u_int64_t area[2];
 
@@ -78,3 +78,8 @@ int done_work(int value, int trace) {
   afl_init();
   return afl_call(4, (sc_u_long)value, 0);
 }
+
+int log_file(char* log_buffer, size_t size) {
+  return afl_call(5, (sc_u_long)log_buffer, size);
+}
+

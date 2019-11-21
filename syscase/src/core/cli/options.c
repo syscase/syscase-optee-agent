@@ -1,9 +1,9 @@
 #include "syscase/cli/options.h"
 
 #include "syscase/cli/globals.h"
-#include "syscase/cli/mode.h"
 #include "syscase/cli/usage.h"
 #include "syscase/common.h"
+#include "syscase/target.h"
 #include "syscase/test_run.h"
 #include "syscase/types.h"
 
@@ -14,7 +14,7 @@ void process_options(int argc,
                      char** input,
                      sc_u_long* input_size) {
   int opt;
-  while ((opt = getopt(argc, argv, "i:tLOS")) != -1) {
+  while ((opt = getopt(argc, argv, "i:tLOSD")) != -1) {
     switch (opt) {
       case 'i':
         sc_read_file(optarg, input, input_size);
@@ -29,6 +29,9 @@ void process_options(int argc,
         break;
       case 'S':
         fuzzing_mode |= MODE_SMC;
+        break;
+      case 'D':
+        fuzzing_mode |= MODE_SMC_DRIVER;
         break;
       case '?':
       default:

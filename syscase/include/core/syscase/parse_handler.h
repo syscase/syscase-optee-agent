@@ -1,12 +1,16 @@
 #ifndef SYSCASE_PARSE_HANDLER_H
 #define SYSCASE_PARSE_HANDLER_H
 
-#include "syscase/parse_state.h"
+#include "syscase/json.h"
 
-typedef int (*parse_handler_t)(struct buffer*,
-                               struct parse_state*,
-                               sc_u_int64_t*);
+typedef int (*parse_handler_t)(struct json_call_t* json_calls,
+                int njson_calls,
+                struct buffer* data,
+                struct system_call* calls,
+                int call_index,
+                int arg_index);
 
-parse_handler_t get_parse_handler(unsigned char type);
+parse_handler_t get_parse_handler(int type);
+int parse_type_for(char* s, sc_u_long size);
 
 #endif /*SYSCASE_PARSE_HANDLER_H*/

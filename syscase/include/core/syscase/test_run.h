@@ -5,6 +5,7 @@
 
 #define FLAG_TRACE 0x1
 #define FLAG_COMBINED 0x2
+#define FLAG_SMC_DRIVER 0x4
 
 void get_test_case(char** input, sc_u_long* input_size, int trace);
 sc_u_long trace_test_case(char* input,

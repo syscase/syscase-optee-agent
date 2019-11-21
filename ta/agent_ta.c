@@ -4,6 +4,8 @@
 #include <tee_internal_api_extensions.h>
 #include <stdint.h>
 #include "syscase/test_run.h"
+#include "syscase/cli/trace_handler.h"
+#include "syscase/test_case.h"
 
 #include "agent_ta.h"
 
@@ -140,3 +142,12 @@ TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
 		return TEE_ERROR_BAD_PARAMETERS;
 	}
 }
+
+sc_u_long execute_smc_driver(test_case_t* value,
+                             int njson_calls,
+                             struct json_call_t* json_calls,
+                             struct buffer* data) {
+ // Not supported
+ return -1;
+}
+
