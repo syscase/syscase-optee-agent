@@ -1,6 +1,3 @@
-[submodule "smcchar"]
-	path = smcchar
-	url = git@github.com:zaidan/smcchar.git
 [submodule "syscase/vendor/jsmn"]
 	path = syscase/vendor/jsmn
 	url = https://github.com/zserge/jsmn.git
